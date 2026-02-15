@@ -1,0 +1,2970 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>EventHub - Optimized Platform</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --accent: #ec4899;
+        --bg-dark: #0f172a;
+        --bg-card: rgba(30, 41, 59, 0.7);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.1);
+        --success: #10b981;
+        --danger: #ef4444;
+        --glass: blur(12px);
+        --shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding-bottom: 80px;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(99, 102, 241, 0.15) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(236, 72, 153, 0.15) 0%,
+            transparent 40%
+          );
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      button {
+        cursor: pointer;
+        border: none;
+        outline: none;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      }
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        background: #475569;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .btn-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .page-loader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        width: 100%;
+        min-height: 200px;
+      }
+      .card {
+        background: var(--bg-card);
+        backdrop-filter: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+      }
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .badge-cat {
+        background: rgba(99, 102, 241, 0.2);
+        color: #818cf8;
+      }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 0;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .view {
+        display: none;
+        padding: 40px 0;
+        animation: fadeIn 0.4s ease;
+      }
+      .view.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Mobile Header Profile Icon */
+      .mobile-header-profile {
+        display: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--gradient);
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 2px solid var(--border);
+      }
+      .mobile-header-profile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .view {
+        display: none;
+        padding: 40px 0;
+        animation: fadeIn 0.4s ease;
+      }
+      .view.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: white;
+        font-size: 1rem;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      /* Event Cards - Improved UI */
+      .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+      }
+      .event-card {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        padding: 0;
+        border-radius: 24px;
+        position: relative;
+        background: var(--bg-card);
+      }
+      .event-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.3);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+      .event-img {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .event-img::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          transparent 50%,
+          rgba(15, 23, 42, 0.8)
+        );
+      }
+      .event-card-content {
+        padding: 20px;
+        position: relative;
+        z-index: 2;
+      }
+      .event-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+      .event-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .event-card-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .event-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+      }
+      .event-price {
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: var(--primary);
+      }
+      .qty-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px;
+        border-radius: 8px;
+      }
+      .qty-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+      }
+      .qty-btn:hover:not(:disabled) {
+        background: var(--primary);
+      }
+      .qty-value {
+        min-width: 24px;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      /* Favorite Heart - Red Active State */
+      .fav-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        color: white;
+        font-size: 1.1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      .fav-btn:hover {
+        transform: scale(1.15);
+        background: white;
+        color: #ef4444;
+      }
+      .fav-btn.active {
+        background: white;
+        color: #ef4444;
+        border-color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      }
+      .fav-btn.active i {
+        font-weight: 900;
+      } /* Filled heart */
+
+      /* Popular Events Horizontal Scroll */
+      .popular-section {
+        margin-bottom: 40px;
+      }
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-title i {
+        color: var(--accent);
+      }
+      .popular-scroll {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 16px;
+        scroll-snap-type: x mandatory;
+      }
+      .popular-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .popular-card {
+        min-width: 280px;
+        scroll-snap-align: start;
+        background: var(--bg-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+      }
+      .popular-card img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+      }
+      .popular-info {
+        padding: 16px;
+      }
+      .popular-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: var(--gradient);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      /* Category Pills - Circular Icons */
+      .category-pills {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+        justify-content: center;
+      }
+      .pill {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        width: 50px;
+        height: 50px;
+        padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1.2rem;
+        color: var(--text-muted);
+      }
+      .pill:hover,
+      .pill.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      }
+
+      /* Detail View */
+      .detail-header {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .detail-img {
+        width: 100%;
+        height: 300px;
+        border-radius: 24px;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      .detail-content {
+        width: 100%;
+      }
+      .detail-top-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .description-box {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid var(--primary);
+      }
+      .organizer-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        padding: 16px;
+        border-radius: 16px;
+        margin-top: 20px;
+      }
+      .org-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+      }
+      .org-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .ticket-list-container {
+        margin-top: 24px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .ticket-item {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .price-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+      .price-row.total {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--text-main);
+        margin-top: 8px;
+        border-top: 1px dashed var(--border);
+        padding-top: 8px;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      th {
+        color: var(--text-muted);
+      }
+      .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      table {
+        min-width: 800px;
+      }
+
+      /* Modals */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+      }
+
+      /* Profile Modal Specific */
+      .profile-header {
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(
+          to bottom,
+          rgba(99, 102, 241, 0.1),
+          transparent
+        );
+      }
+      .profile-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--gradient);
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .profile-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .profile-avatar-large .edit-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .profile-avatar-large:hover .edit-overlay {
+        opacity: 1;
+      }
+      .profile-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .profile-menu-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .profile-menu-item i {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        width: 24px;
+        text-align: center;
+      }
+      .profile-menu-item.danger {
+        color: var(--danger);
+      }
+      .profile-menu-item.danger i {
+        color: var(--danger);
+      }
+
+      /* Ticket Visual Styles */
+      .tickets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+      }
+      .ticket-visual {
+        background: #ffffff;
+        color: #0f172a;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s;
+        cursor: pointer;
+      }
+      .tv-main {
+        flex: 1;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-bottom: 2px dashed #e2e8f0;
+        position: relative;
+      }
+      .tv-cutout {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background-color: var(--bg-dark);
+        border-radius: 50%;
+        top: 100%;
+        transform: translateY(-50%);
+        z-index: 10;
+      }
+      .tv-cutout.left {
+        left: -12px;
+      }
+      .tv-cutout.right {
+        right: -12px;
+      }
+      .tv-stub {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        text-align: center;
+      }
+      .tv-qr {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 8px;
+        border-radius: 12px;
+      }
+
+      /* User Menu Dropdown */
+      .user-menu-container {
+        position: relative;
+      }
+      .user-menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 150px;
+        display: none;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 10px;
+        z-index: 200;
+        backdrop-filter: blur(20px);
+      }
+      .user-menu-dropdown.open {
+        display: flex;
+      }
+      .user-menu-item {
+        padding: 10px 16px;
+        color: var(--text-main);
+        cursor: pointer;
+        border-radius: 8px;
+        text-align: left;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .user-menu-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .user-menu-item.danger {
+        color: var(--danger);
+      }
+
+      /* Toast */
+      #toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 380px;
+      }
+      .toast {
+        min-width: 320px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: rgba(30, 41, 59, 0.96);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: white;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      /* Preloader */
+      #preloader {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-dark);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: opacity 0.5s ease;
+      }
+      .loader-ring {
+        width: 64px;
+        height: 64px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      /* Mobile Nav - Icons Only */
+      .mobile-bottom-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 99;
+        justify-content: space-around;
+        align-items: center;
+      }
+      .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 12px;
+        border-radius: 16px;
+        transition: all 0.2s;
+        width: 60px;
+        height: 60px;
+      }
+      .mobile-nav-item i {
+        font-size: 1.6rem;
+        margin: 0;
+      }
+      .mobile-nav-item.active {
+        color: var(--primary);
+        background: rgba(99, 102, 241, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding-bottom: 70px;
+        }
+        .nav-actions {
+          display: none !important;
+        } /* Force hide desktop nav */
+        .mobile-header-profile {
+          display: flex;
+        } /* Show mobile profile icon */
+        nav {
+          justify-content: space-between;
+        } /* Split logo and profile */
+        .mobile-bottom-nav {
+          display: flex;
+        }
+        header {
+          padding: 10px 0;
+        }
+        .modal-overlay {
+          justify-content: flex-end;
+          background: transparent;
+        }
+        .modal {
+          width: 100%;
+          max-width: 100%;
+          border-radius: 24px 24px 0 0;
+          transform: translateY(100%);
+          transition: transform 0.3s;
+          padding-bottom: 30px;
+        }
+        .modal-overlay.open .modal {
+          transform: translateY(0);
+        }
+        #toast-container {
+          top: 16px;
+          right: 16px;
+          left: 16px;
+          max-width: none;
+        }
+        .toast {
+          min-width: auto;
+        }
+        .tv-qr {
+          width: 120px;
+          height: 120px;
+        }
+        .tv-title {
+          font-size: 1.25rem;
+        }
+        .popular-card {
+          min-width: 260px;
+        }
+        .category-pills {
+          justify-content: flex-start;
+          padding: 0 20px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .category-pills::-webkit-scrollbar {
+          display: none;
+        }
+      }
+      /* Hero Section Centered */
+      .hero {
+        text-align: center;
+        padding: 40px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .search-bar-container {
+        position: relative;
+        margin-top: 24px;
+        width: 100%;
+        max-width: 600px;
+      }
+      .search-bar {
+        width: 100%;
+        padding: 16px 20px 16px 50px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        color: white;
+        font-size: 1rem;
+      }
+      .search-bar:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+      }
+      .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.2rem;
+      }
+      .category-pills {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+        max-width: 600px;
+        justify-content: center;
+      }
+      .category-pills::-webkit-scrollbar {
+        display: none;
+      }
+      .pill {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .pill:hover,
+      .pill.active {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="preloader">
+      <div class="loader-ring"></div>
+      <h2
+        style="
+          background: var(--gradient);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        "
+      >
+        EventHub
+      </h2>
+    </div>
+
+    <header>
+      <div class="container">
+        <nav>
+          <div class="logo" onclick="app.router.navigate('home')">
+            <i class="ph ph-ticket"></i> 21Events
+          </div>
+
+          <!-- Mobile Profile Icon -->
+          <div
+            class="mobile-header-profile"
+            id="mobileHeaderProfile"
+            onclick="app.ui.openProfileModal()"
+          >
+            <i class="ph ph-user" style="font-size: 1.2rem; color: white"></i>
+          </div>
+
+          <div class="nav-actions">
+            <button
+              class="btn btn-secondary"
+              onclick="app.router.navigate('home')"
+            >
+              Find Events
+            </button>
+            <button
+              class="btn btn-secondary"
+              onclick="app.router.navigate('favorites')"
+            >
+              <i class="ph ph-heart"></i> Favorites
+            </button>
+            <div id="loggedOutNav" style="display: flex; gap: 10px">
+              <div
+                class="btn btn-secondary"
+                onclick="app.ui.openAuthModal('login')"
+              >
+                Login
+              </div>
+              <div
+                class="btn btn-primary"
+                onclick="app.ui.openAuthModal('signup')"
+              >
+                Sign Up
+              </div>
+            </div>
+            <div
+              id="loggedInNav"
+              style="display: none; gap: 10px; align-items: center"
+            >
+              <span id="userNameDisplay" style="font-weight: 500"></span>
+              <button
+                class="btn btn-secondary"
+                onclick="app.router.navigate('dashboard')"
+              >
+                My Tickets
+              </button>
+              <button id="roleBtn" class="btn btn-primary">My Dashboard</button>
+              <div class="user-menu-container">
+                <button
+                  class="btn btn-secondary"
+                  style="padding: 8px"
+                  onclick="app.ui.toggleUserMenu()"
+                  title="Menu"
+                >
+                  <i class="ph ph-user-circle"></i>
+                </button>
+                <div id="userMenuDropdown" class="user-menu-dropdown">
+                  <div class="user-menu-item" onclick="app.ui.showContactUs()">
+                    <i class="ph ph-envelope"></i> Contact Us
+                  </div>
+                  <div
+                    class="user-menu-item danger"
+                    onclick="app.auth.logout()"
+                  >
+                    <i class="ph ph-sign-out"></i> Logout
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- MOBILE NAV (Icons Only) -->
+    <div class="mobile-bottom-nav">
+      <div class="mobile-nav-item active" onclick="app.router.navigate('home')">
+        <i class="ph ph-house"></i>
+      </div>
+      <div class="mobile-nav-item" onclick="app.router.navigate('favorites')">
+        <i class="ph ph-heart"></i>
+      </div>
+      <div
+        class="mobile-nav-item"
+        id="mobileTicketsBtn"
+        onclick="app.router.navigate('dashboard')"
+      >
+        <i class="ph ph-ticket"></i>
+      </div>
+      <div class="mobile-nav-item" id="mobileDashBtn">
+        <i class="ph ph-squares-four"></i>
+      </div>
+      <div
+        class="mobile-nav-item"
+        id="mobileProfileBtn"
+        onclick="app.ui.openProfileModal()"
+      >
+        <i class="ph ph-user-circle"></i>
+      </div>
+    </div>
+
+    <main id="app" class="container"></main>
+    <div id="toast-container"></div>
+
+    <!-- AUTH MODAL -->
+    <div class="modal-overlay" id="authModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2 id="authTitle">Login</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('authModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <form id="authForm" onsubmit="app.auth.handleAuth(event)">
+          <div class="form-group">
+            <label>Email</label
+            ><input
+              type="email"
+              name="email"
+              required
+              placeholder="user@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label
+            ><input
+              type="password"
+              name="password"
+              required
+              placeholder="•••••"
+            />
+          </div>
+          <div id="signupFields" style="display: none">
+            <div class="form-group">
+              <label>Full Name</label
+              ><input type="text" name="name" placeholder="John Doe" />
+            </div>
+            <div class="form-group">
+              <label>I am a(n):</label>
+              <div style="display: flex; gap: 20px; margin-top: 5px">
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    color: var(--text-main);
+                  "
+                  ><input
+                    type="radio"
+                    name="role"
+                    value="attendee"
+                    checked
+                    style="width: auto; margin: 0"
+                  />
+                  Attendee</label
+                >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    color: var(--text-main);
+                  "
+                  ><input
+                    type="radio"
+                    name="role"
+                    value="organizer"
+                    style="width: auto; margin: 0"
+                    onchange="app.ui.toggleBrandName(true)"
+                  />
+                  Organizer</label
+                >
+              </div>
+            </div>
+            <div
+              class="form-group"
+              id="brandNameGroup"
+              style="display: none; animation: fadeIn 0.3s ease"
+            >
+              <label>Brand Name (Optional)</label
+              ><input
+                type="text"
+                name="brandName"
+                placeholder="e.g. Studio 54"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center"
+          >
+            Submit
+          </button>
+        </form>
+        <p
+          style="
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+          "
+        >
+          <span id="authSwitchText">New here?</span>
+          <a
+            href="#"
+            style="color: var(--primary)"
+            onclick="app.ui.toggleAuthMode()"
+            >Click here</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal-overlay" id="checkoutModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Checkout</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('checkoutModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <div
+          id="checkoutSummary"
+          class="card"
+          style="background: rgba(255, 255, 255, 0.03); margin-bottom: 20px"
+        ></div>
+        <form onsubmit="app.handlers.processPayment(event)">
+          <div class="form-group">
+            <label>Cardholder Name</label
+            ><input type="text" required placeholder="John Doe" />
+          </div>
+          <div class="form-group">
+            <label>Card Number</label
+            ><input
+              type="text"
+              required
+              placeholder="0000 0000 0000 0000"
+              maxlength="19"
+            />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+            <div class="form-group">
+              <label>Expiry</label
+              ><input type="text" required placeholder="MM/YY" maxlength="5" />
+            </div>
+            <div class="form-group">
+              <label>CVC</label
+              ><input type="text" required placeholder="123" maxlength="3" />
+            </div>
+          </div>
+          <button
+            type="submit"
+            id="payBtn"
+            class="btn btn-primary"
+            style="
+              width: 100%;
+              justify-content: center;
+              font-size: 1.1rem;
+              padding: 16px;
+            "
+          >
+            Pay <span id="payAmount"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ORGANIZER CREATE/EDIT MODAL -->
+    <div class="modal-overlay" id="eventModal">
+      <div class="modal card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h2 id="modalTitle">Create Event</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('eventModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <form onsubmit="app.handlers.saveEvent(event)">
+          <input type="hidden" id="eventIdHidden" />
+          <div class="form-group">
+            <label>Event Title</label
+            ><input type="text" id="eventTitle" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+            <div class="form-group">
+              <label>Date</label><input type="date" id="eventDate" required />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="eventCategory">
+                <option>Music</option>
+                <option>Tech</option>
+                <option>Business</option>
+                <option>Art</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Location</label
+            ><input type="text" id="eventLocation" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label
+            ><textarea
+              id="eventDescription"
+              rows="4"
+              placeholder="Describe your event..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Event Image</label>
+            <input
+              type="file"
+              id="eventImageInput"
+              accept="image/*"
+              onchange="app.handlers.previewImage(this)"
+            />
+            <div
+              id="imagePreviewContainer"
+              style="margin-top: 10px; display: none; position: relative"
+            >
+              <img
+                id="imgPreview"
+                src=""
+                style="
+                  width: 100%;
+                  height: 200px;
+                  object-fit: cover;
+                  border-radius: 8px;
+                  border: 1px solid var(--border);
+                "
+              />
+              <button
+                type="button"
+                onclick="app.handlers.clearImage()"
+                style="
+                  position: absolute;
+                  top: 10px;
+                  right: 10px;
+                  background: rgba(0, 0, 0, 0.7);
+                  color: white;
+                  border-radius: 50%;
+                  width: 30px;
+                  height: 30px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                "
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+              "
+            >
+              <label style="margin: 0">Ticket Types</label>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                onclick="app.handlers.addTicketRow()"
+              >
+                <i class="ph ph-plus"></i> Add Type
+              </button>
+            </div>
+            <div id="ticketTypesContainer"></div>
+          </div>
+          <button
+            type="submit"
+            id="saveEventBtn"
+            class="btn btn-primary"
+            style="width: 100%"
+          >
+            Publish Event
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- WITHDRAWAL MODAL -->
+    <div class="modal-overlay" id="withdrawalModal">
+      <div class="modal card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Request Withdrawal</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('withdrawalModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <form onsubmit="app.handlers.requestWithdrawal(event)">
+          <div class="form-group">
+            <label>Available to Withdraw (₦)</label
+            ><input
+              type="number"
+              id="withdrawalAmountInput"
+              name="amount"
+              readonly
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label>Bank Name</label
+            ><input
+              type="text"
+              name="bankName"
+              required
+              placeholder="e.g. Access Bank"
+            />
+          </div>
+          <div class="form-group">
+            <label>Account Number</label
+            ><input
+              type="text"
+              name="accountNum"
+              required
+              placeholder="Last 4 digits"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%">
+            Submit Request
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TICKET DETAIL MODAL -->
+    <div class="modal-overlay" id="ticketDetailModal">
+      <div class="modal">
+        <div class="modal-content">
+          <div style="width: 100%; display: flex; justify-content: flex-end">
+            <button
+              class="btn btn-secondary"
+              style="padding: 8px"
+              onclick="app.ui.closeModal('ticketDetailModal')"
+            >
+              <i class="ph ph-x"></i>
+            </button>
+          </div>
+          <div
+            id="ticketForCapture"
+            style="position: relative; transform-origin: center top"
+          ></div>
+          <div class="ticket-action-bar">
+            <button
+              class="btn btn-primary"
+              onclick="app.handlers.downloadTicket()"
+            >
+              <i class="ph ph-download-simple"></i> Download
+            </button>
+            <button
+              class="btn btn-success"
+              onclick="app.handlers.shareTicket()"
+            >
+              <i class="ph ph-share-network"></i> Share Image
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE MODAL (New) -->
+    <div class="modal-overlay" id="profileModal">
+      <div class="modal" style="padding: 0">
+        <!-- Header -->
+        <div class="profile-header">
+          <button
+            class="btn btn-secondary"
+            style="position: absolute; top: 16px; right: 16px; padding: 6px"
+            onclick="app.ui.closeModal('profileModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+          <div
+            class="profile-avatar-large"
+            onclick="app.ui.triggerProfilePicUpload()"
+          >
+            <img src="" id="profilePicLarge" style="display: none" />
+            <i class="ph ph-user" id="profilePicPlaceholder"></i>
+            <div class="edit-overlay"><i class="ph ph-camera"></i></div>
+          </div>
+          <input
+            type="file"
+            id="profilePicInput"
+            accept="image/*"
+            style="display: none"
+            onchange="app.ui.handleProfilePicChange(this)"
+          />
+          <h2 id="profileNameDisplay" style="margin-bottom: 4px">Guest</h2>
+          <p
+            id="profileEmailDisplay"
+            style="font-size: 0.9rem; color: var(--text-muted); margin: 0"
+          >
+            Login to continue
+          </p>
+        </div>
+
+        <!-- Menu Items -->
+        <div id="profileMenuContent">
+          <!-- Content injected via JS based on login state -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT US MODAL -->
+    <div class="modal-overlay" id="contactModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Contact Us</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('contactModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 20px">
+          Need help? Reach out to us via email or phone.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 15px">
+          <a
+            href="mailto:support@21events.com"
+            style="
+              color: white;
+              text-decoration: none;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              background: rgba(255, 255, 255, 0.05);
+              padding: 15px;
+              border-radius: 12px;
+            "
+          >
+            <i
+              class="ph ph-envelope"
+              style="font-size: 1.5rem; color: var(--primary)"
+            ></i>
+            <span>support@21events.com</span>
+          </a>
+          <a
+            href="tel:+2348000000000"
+            style="
+              color: white;
+              text-decoration: none;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              background: rgba(255, 255, 255, 0.05);
+              padding: 15px;
+              border-radius: 12px;
+            "
+          >
+            <i
+              class="ph ph-phone"
+              style="font-size: 1.5rem; color: var(--primary)"
+            ></i>
+            <span>+234 800 000 0000</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT US MODAL -->
+    <div class="modal-overlay" id="aboutModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>About Us</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('aboutModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <p style="color: var(--text-muted); line-height: 1.6">
+          Welcome to 21Events, your premier destination for discovering and
+          managing the best events. We connect people through unforgettable
+          experiences. Our platform empowers organizers to reach wider audiences
+          and attendees to find their next adventure.
+        </p>
+        <br />
+        <p style="color: var(--text-muted); line-height: 1.6">
+          Version 1.0.0<br />
+          Built with ❤️ for the community.
+        </p>
+      </div>
+    </div>
+
+    <!-- HELP CENTER MODAL -->
+    <div class="modal-overlay" id="helpModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Help Center</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('helpModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <div style="margin-bottom: 16px">
+          <h4 style="margin-bottom: 8px">How to buy a ticket?</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem">
+            Browse events, select your preferred ticket type, and proceed to
+            checkout. You will receive a QR code ticket.
+          </p>
+        </div>
+        <div style="margin-bottom: 16px">
+          <h4 style="margin-bottom: 8px">How to become an organizer?</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem">
+            Sign up and select "Organizer" as your role during registration. You
+            can then create and manage events from your dashboard.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // CONFIGURATION
+      // ==========================================
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbwC84QF4q6lPfTDsbnnWbWfH0nHX9k0ID_iNdeyPoE3CQ-YA38K5lC_Yjr2h9cMHSP8cg/exec";
+      const fmtMoney = (amount) => {
+        const num = parseFloat(amount) || 0;
+        return "₦" + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      };
+      const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+              let width = img.width;
+              let height = img.height;
+              const MAX_WIDTH = 400;
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.5));
+            };
+            img.onerror = (err) => reject(err);
+          };
+          reader.onerror = (err) => reject(err);
+        });
+      };
+      const api = {
+        post: async (action, data = {}) => {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const response = await fetch(API_URL, {
+              method: "POST",
+              body: JSON.stringify({ ...data, action }),
+              signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+            const json = await response.json();
+            if (json.status === "error") throw new Error(json.message);
+            return json;
+          } catch (e) {
+            console.error("API Error:", e);
+            if (e.name !== "AbortError") {
+              app.ui.showToast(e.message || "Network Error", "error");
+            }
+            return null;
+          }
+        },
+        getEventsCached: async () => {
+          const cached = localStorage.getItem("eh_events_cache");
+          let cachedData = null;
+          if (cached) {
+            try {
+              cachedData = JSON.parse(cached);
+            } catch (e) {}
+          }
+          const freshRes = await api.post("getEvents");
+          if (freshRes && freshRes.data) {
+            localStorage.setItem(
+              "eh_events_cache",
+              JSON.stringify(freshRes.data),
+            );
+            return freshRes.data;
+          }
+          if (cachedData) return cachedData;
+          return [];
+        },
+      };
+
+      // ==========================================
+      // APPLICATION LOGIC
+      // ==========================================
+      const app = {
+        state: {
+          isLoginMode: true,
+          cart: {},
+          feePercentage: 0.05,
+          currentEventId: null,
+          currentEventData: null,
+          currentUser: JSON.parse(localStorage.getItem("eh_session")) || null,
+          userProfile:
+            JSON.parse(localStorage.getItem("eh_user_profile")) || {},
+          currentTicketData: null,
+          favorites: JSON.parse(localStorage.getItem("eh_favorites")) || [],
+          allEvents: [],
+        },
+        init: async () => {
+          app.ui.checkSession();
+          app.ui.loadProfilePic();
+          const preloader = document.getElementById("preloader");
+          setTimeout(() => {
+            preloader.style.opacity = "0";
+            setTimeout(() => preloader.remove(), 500);
+          }, 600);
+          const params = new URLSearchParams(window.location.search);
+          const eventId = params.get("eventId");
+          if (eventId) {
+            app.router.navigate("event", eventId);
+          } else {
+            app.router.navigate("home");
+          }
+        },
+        router: {
+          navigate: async (viewName, params = null) => {
+            const main = document.getElementById("app");
+            app.router.current = viewName;
+            window.scrollTo(0, 0);
+            app.ui.updateMobileNav(viewName);
+            if (viewName === "home") app.views.renderHome(main);
+            else if (viewName === "favorites") app.views.renderFavorites(main);
+            else if (viewName === "dashboard") app.views.renderMyTickets(main);
+            else if (viewName === "event")
+              app.views.renderEventDetail(main, params);
+            else if (viewName === "organizer")
+              app.views.renderOrganizerDashboard(main);
+          },
+        },
+        views: {
+          renderHome: async (container) => {
+            const cached = localStorage.getItem("eh_events_cache");
+            if (cached) {
+              const events = JSON.parse(cached);
+              app.state.allEvents = events;
+              container.innerHTML = app.views.generateEventGrid(events);
+              api.getEventsCached().then((freshEvents) => {
+                app.state.allEvents = freshEvents;
+                if (app.router.current === "home")
+                  container.innerHTML =
+                    app.views.generateEventGrid(freshEvents);
+              });
+            } else {
+              container.innerHTML = `<div class="page-loader"><div class="loader-ring" style="width:40px; height:40px; margin:0;"></div></div>`;
+              const events = await api.getEventsCached();
+              app.state.allEvents = events;
+              if (app.router.current === "home")
+                container.innerHTML = app.views.generateEventGrid(events);
+            }
+          },
+          renderFavorites: async (container) => {
+            const events = await api.getEventsCached();
+            const favEvents = events.filter((e) =>
+              app.state.favorites.includes(e.id),
+            );
+            container.innerHTML = `<div class="view active"><h1 style="margin-bottom: 20px;">Favorites</h1>${app.views.generateEventGrid(favEvents, true)}</div>`;
+          },
+          generateEventGrid: (events, isFavView = false) => {
+            if (events.length === 0)
+              return `<div class="card" style="text-align:center; color:var(--text-muted); padding:40px;">No events found.</div>`;
+
+            // Calculate Popular Events (Top 5 by sold count)
+            let popularHTML = "";
+            if (!isFavView) {
+              const sortedByPop = [...events]
+                .sort((a, b) => {
+                  const aSold = a.tickets.reduce(
+                    (s, t) => s + (t.sold || 0),
+                    0,
+                  );
+                  const bSold = b.tickets.reduce(
+                    (s, t) => s + (t.sold || 0),
+                    0,
+                  );
+                  return bSold - aSold;
+                })
+                .slice(0, 5);
+
+              if (sortedByPop.length > 0) {
+                popularHTML = `
+                    <div class="popular-section">
+                        <div class="section-title"><i class="ph ph-fire-fill"></i> Popular Events</div>
+                        <div class="popular-scroll">
+                            ${sortedByPop
+                              .map(
+                                (e) => `
+                                <div class="popular-card" onclick="app.router.navigate('event', '${e.id}')">
+                                    <span class="popular-badge"><i class="ph ph-lightning-fill"></i> Trending</span>
+                                    <img src="${e.image || `https://picsum.photos/seed/${e.title}/400/225`}" />
+                                    <div class="popular-info">
+                                        <h3 style="font-size: 1rem; margin-bottom: 4px;">${e.title}</h3>
+                                        <div style="color:var(--text-muted); font-size: 0.8rem;">${new Date(e.date).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>`;
+              }
+            }
+
+            return `
+              <div class="view active">
+                ${
+                  !isFavView
+                    ? `
+                <section class="hero" style="text-align: center;">
+                  <h1 style="font-size: 2.5rem;">Discover Events</h1>
+                  <p style="font-size:1rem; color:var(--text-muted); margin-top:8px;">Find the best events happening near you.</p>
+                  <div class="search-bar-container" style="max-width: 500px; margin: 24px auto 0;">
+                      <i class="ph ph-magnifying-glass search-icon"></i>
+                      <input type="text" id="searchInput" class="search-bar" placeholder="Search events..." onkeyup="app.handlers.filterEvents()" />
+                  </div>
+                </section>`
+                    : ""
+                }
+                
+                ${popularHTML}
+                
+                ${
+                  !isFavView
+                    ? `
+                <!-- Category Pills (Icons Only) -->
+                <div class="category-pills" id="categoryPills">
+                    <div class="pill active" onclick="app.handlers.filterCategory('All')"><i class="ph ph-squares-four"></i></div>
+                    <div class="pill" onclick="app.handlers.filterCategory('Music')"><i class="ph ph-music-notes"></i></div>
+                    <div class="pill" onclick="app.handlers.filterCategory('Tech')"><i class="ph ph-cpu"></i></div>
+                    <div class="pill" onclick="app.handlers.filterCategory('Business')"><i class="ph ph-briefcase"></i></div>
+                </div>`
+                    : ""
+                }
+                
+                <h3 style="margin-bottom: 16px; font-size: 1.1rem;">All Events</h3>
+                <div class="events-grid" id="eventsGrid">
+                  ${events
+                    .map((e) => {
+                      if (!e.image)
+                        e.image = `https://picsum.photos/seed/${e.title || "default"}/400/225`;
+                      const internalTickets = e.tickets.filter(
+                        (t) => !t.isExternal,
+                      );
+                      let isSoldOut = false;
+                      if (internalTickets.length > 0) {
+                        const totalQty = internalTickets.reduce(
+                          (acc, t) => acc + (t.qty || 0),
+                          0,
+                        );
+                        const totalSold = internalTickets.reduce(
+                          (acc, t) => acc + (t.sold || 0),
+                          0,
+                        );
+                        if (totalQty > 0 && totalSold >= totalQty)
+                          isSoldOut = true;
+                      }
+                      const externalTicket = e.tickets.find(
+                        (t) => t.isExternal,
+                      );
+                      const priceDisplay =
+                        internalTickets.length > 0
+                          ? fmtMoney(
+                              Math.min(...internalTickets.map((t) => t.price)),
+                            )
+                          : "External";
+                      const isFav = app.state.favorites.includes(e.id);
+
+                      return `
+                    <div class="event-card" data-category="${e.category}" data-title="${e.title.toLowerCase()}" onclick="app.router.navigate('event', '${e.id}')">
+                      <div class="event-img" style="background-image: url('${e.image}')">
+                        <button class="fav-btn ${isFav ? "active" : ""}" onclick="event.stopPropagation(); app.handlers.toggleFavorite('${e.id}')">
+                            <i class="ph ${isFav ? "ph-heart-fill" : "ph-heart"}"></i>
+                        </button>
+                      </div>
+                      <div class="event-card-content">
+                        <div class="event-card-header">
+                            <span class="badge badge-cat">${e.category}</span>
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">${new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                        </div>
+                        <h3 class="event-card-title">${e.title}</h3>
+                        <div class="event-card-meta">
+                          <span><i class="ph ph-map-pin"></i> ${e.location}</span>
+                        </div>
+                        <div class="event-card-footer">
+                          <span class="event-price">${priceDisplay}</span>
+                          ${
+                            isSoldOut
+                              ? `<button class="btn btn-secondary btn-sm" disabled>Sold Out</button>`
+                              : externalTicket && internalTickets.length === 0
+                                ? `<a href="${externalTicket.externalLink}" target="_blank" class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Get Ticket</a>`
+                                : `<button class="btn btn-primary btn-sm">Get Ticket</button>`
+                          }
+                        </div>
+                      </div>
+                    </div>`;
+                    })
+                    .join("")}
+                </div>
+              </div>`;
+          },
+          renderEventDetail: async (container, eventId) => {
+            container.innerHTML = `<div class="page-loader"><div class="loader-ring" style="width:30px; height:30px; margin:0 auto;"></div></div>`;
+            const events = await api.getEventsCached();
+            const event = events.find((e) => e.id === eventId);
+            if (!event) return app.router.navigate("home");
+            app.state.currentEventId = eventId;
+            app.state.currentEventData = event;
+            app.state.cart = {};
+            event.tickets.forEach((t) => {
+              if (!t.isExternal) app.state.cart[t.ticketId] = 0;
+            });
+            const isFav = app.state.favorites.includes(event.id);
+
+            container.innerHTML = `
+              <div class="view active">
+                <div class="detail-top-actions">
+                    <button class="btn btn-secondary" onclick="app.router.navigate('home')" style="border:none; background:transparent; padding:0; color: var(--text-muted); display:flex; align-items:center; gap:5px;">
+                        <i class="ph ph-arrow-left" style="font-size: 1.5rem;"></i> <span>Back</span>
+                    </button>
+                    <button class="fav-btn ${isFav ? "active" : ""}" style="position:relative; top:0; right:0;" onclick="app.handlers.toggleFavorite('${event.id}')">
+                        <i class="ph ${isFav ? "ph-heart-fill" : "ph-heart"}"></i>
+                    </button>
+                </div>
+                <div class="detail-header">
+                  <div class="detail-img" style="background-image:url('${event.image || `https://picsum.photos/seed/${event.title || "default"}/400/225`}');"></div>
+                  <div class="detail-content">
+                    <span class="badge badge-cat">${event.category}</span>
+                    <h1 style="font-size: 2.2rem; line-height: 1.2; margin: 10px 0;">${event.title}</h1>
+                    <div style="color:var(--text-muted); margin-bottom:24px; font-size: 1rem;">
+                      <div style="margin-bottom: 8px;"><i class="ph ph-calendar-blank"></i> ${new Date(event.date).toDateString()}</div>
+                      <div><i class="ph ph-map-pin"></i> ${event.location}</div>
+                    </div>
+                    ${event.description ? `<div class="description-box"><h4>About Event</h4><p>${event.description}</p></div>` : ""}
+                    
+                    <div class="organizer-card">
+                       <div class="org-avatar">${event.organizerName ? event.organizerName.charAt(0) : "U"}</div>
+                       <div class="org-info" style="flex:1">
+                          <h4>${event.organizerName || "Unknown Organizer"}</h4>
+                          <span>Organizer</span>
+                       </div>
+                       <button class="btn btn-secondary btn-sm" onclick="app.ui.showToast('Followed!')"><i class="ph ph-user-plus"></i> Follow</button>
+                    </div>
+
+                    <div class="ticket-list-container">
+                      <h3 style="padding: 16px 16px 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Select Tickets</h3>
+                      ${event.tickets
+                        .map((ticket) => {
+                          if (ticket.isExternal)
+                            return `<div class="ticket-item"><div class="ticket-info"><div class="ticket-name" style="font-weight: 600;">${ticket.type}</div><div class="ticket-meta" style="color: var(--text-muted);">External Link</div></div><a href="${ticket.externalLink}" target="_blank" class="btn btn-primary btn-sm">Get External</a></div>`;
+                          const remaining = ticket.qty - ticket.sold;
+                          const isSoldOut = remaining <= 0;
+                          return `
+                        <div class="ticket-item">
+                          <div class="ticket-info">
+                            <div class="ticket-name" style="font-weight: 600;">${ticket.type} ${isSoldOut ? "<span style='color:var(--danger) font-size:0.8rem;'>(Sold Out)</span>" : ""}</div>
+                            <div class="ticket-meta" style="color: var(--primary); font-weight: 700;">${fmtMoney(ticket.price)} ${!isSoldOut ? `<span style="color:var(--text-muted); font-weight:400; font-size: 0.85rem; margin-left: 8px;">• ${remaining} left</span>` : ""}</div>
+                          </div>
+                          ${
+                            !isSoldOut
+                              ? `
+                            <div class="qty-control">
+                              <button class="qty-btn" onclick="app.handlers.updateTicketQty('${ticket.ticketId}', -1)">-</button>
+                              <span class="qty-value" id="qty-${ticket.ticketId}">0</span>
+                              <button class="qty-btn" onclick="app.handlers.updateTicketQty('${ticket.ticketId}', 1)">+</button>
+                            </div>`
+                              : '<button class="btn btn-secondary btn-sm" disabled>Sold Out</button>'
+                          }
+                        </div>`;
+                        })
+                        .join("")}
+                    </div>
+                    <div class="price-breakdown">
+                      <div id="breakdownItems"></div>
+                      <div class="price-row"><span>Service Fee (5%)</span><span id="feeDisplay">${fmtMoney(0)}</span></div>
+                      <div class="price-row total"><span>Total</span><span id="totalDisplay">${fmtMoney(0)}</span></div>
+                    </div>
+                    <button id="buyBtn" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px; padding:18px; font-size: 1.1rem; border-radius: 16px;" disabled onclick="app.handlers.initBuy()">Select Tickets</button>
+                  </div>
+                </div>
+              </div>`;
+            app.handlers.updateSummary();
+          },
+          renderMyTickets: async (container) => {
+            if (!app.state.currentUser) {
+              app.ui.openAuthModal("login");
+              return;
+            }
+            const user = app.state.currentUser;
+            const buyerId = user.id || user.user_id || null;
+            if (!buyerId) {
+              container.innerHTML = `<div class="view active"><h1>My Tickets</h1><div class="card" style="text-align:center; padding:40px; color:#f87171;"><p>Error: No user ID found.</p></div></div>`;
+              return;
+            }
+            container.innerHTML = `<div class="page-loader"><div class="loader-ring"></div></div>`;
+            const purchaseRes = await api.post("getPurchases", { buyerId });
+            if (
+              !purchaseRes ||
+              purchaseRes.status !== "success" ||
+              !Array.isArray(purchaseRes.data)
+            ) {
+              container.innerHTML = `<div class="view active"><h1>My Tickets</h1><div class="card" style="padding:20px; color:#f87171;"><p>Could not load your tickets.</p></div></div>`;
+              return;
+            }
+            if (purchaseRes.data.length === 0) {
+              container.innerHTML = `<div class="view active"><h1>My Tickets</h1><div class="card" style="text-align:center; padding:40px; color:var(--text-muted);"><i class="ph ph-ticket" style="font-size:3rem; margin-bottom:10px;"></i><p>You haven't purchased any tickets yet.</p><button class="btn btn-primary" style="margin-top:20px;" onclick="app.router.navigate('home')">Browse Events</button></div></div>`;
+              return;
+            }
+            const eventsRes = await api.getEventsCached();
+            const eventsMap = new Map(eventsRes.map((e) => [e.id, e]));
+            const ticketsHTML = purchaseRes.data
+              .map((p) => {
+                const evt = eventsMap.get(p.event_id);
+                const qrData = JSON.stringify({
+                  pid: p.purchase_id,
+                  evt: p.event_id,
+                  qty: p.quantity,
+                  type: p.ticket_type,
+                });
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+                const ticketDataStr = encodeURIComponent(
+                  JSON.stringify({
+                    title: evt ? evt.title : "Unknown Event",
+                    date: evt ? new Date(evt.date).toLocaleDateString() : "TBD",
+                    type: p.ticket_type,
+                    qty: p.quantity,
+                    total: fmtMoney(p.total_paid),
+                    qrData: qrData,
+                    id: p.purchase_id,
+                  }),
+                );
+                return `<div class="ticket-visual" onclick="app.handlers.openTicketDetail('${ticketDataStr}')"><div class="tv-cutout left"></div><div class="tv-cutout right"></div><div class="tv-main"><div><div class="tv-label">Event</div><h3 class="tv-title">${evt ? evt.title : "Unknown Event"}</h3><div class="tv-row"><i class="ph ph-calendar-blank"></i><span>${evt ? new Date(evt.date).toLocaleDateString() : "TBD"}</span></div><div class="tv-row"><i class="ph ph-map-pin"></i><span>${evt ? evt.location : "N/A"}</span></div></div><div style="margin-top:20px;"><div class="tv-label">Ticket Type</div><div class="tv-value">${p.ticket_type} × ${p.quantity}</div></div></div><div class="tv-stub"><img src="${qrUrl}" alt="QR Code" class="tv-qr" /><div class="tv-label" style="margin-top: 8px;">Scan to Enter</div><div class="tv-value" style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Order #${p.purchase_id.slice(-6)}</div></div></div>`;
+              })
+              .join("");
+            container.innerHTML = `<div class="view active"><h1 style="margin-bottom: 20px;">My Tickets</h1><div style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem; text-align: center;">Tap a ticket to view/share</div><div class="tickets-grid">${ticketsHTML}</div></div>`;
+          },
+          renderOrganizerDashboard: async (container) => {
+            const user = app.state.currentUser;
+            if (!user) {
+              app.router.navigate("home");
+              return;
+            }
+            container.innerHTML = `<div class="view active"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h1>Organizer Dashboard</h1><button class="btn btn-primary" onclick="app.handlers.openEventModal()"><i class="ph ph-plus"></i> Create Event</button></div><div class="page-loader"><div class="loader-ring"></div></div></div>`;
+            const [eventsRes, wRes, pRes] = await Promise.all([
+              api.post("getEvents"),
+              api.post("getWithdrawals", {
+                organizerId:
+                  app.state.currentUser.id || app.state.currentUser.user_id,
+              }),
+              api.post("getPurchases"),
+            ]);
+            const allEvents = eventsRes?.data ?? [];
+            const withdrawals = wRes?.data ?? [];
+            const allPurchases = pRes?.data ?? [];
+            const currentOrganizerId = String(user.id || user.user_id || "");
+            const myEvents = allEvents.filter(
+              (e) => String(e.organizerId || "") === currentOrganizerId,
+            );
+            const myEventIds = myEvents.map((e) => e.id);
+            const mySales = allPurchases.filter((p) =>
+              myEventIds.includes(p.event_id),
+            );
+            const grossRevenue = mySales.reduce((sum, p) => {
+              const total = Number(p.total_paid || 0);
+              const organizerShare = p.subtotal
+                ? Number(p.subtotal)
+                : total / 1.05;
+              return sum + organizerShare;
+            }, 0);
+            const totalPaidOut = withdrawals
+              .filter((w) => w.status === "Approved" || w.status === "Pending")
+              .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+            const balance = grossRevenue - totalPaidOut;
+            const totalTicketsSold = myEvents.reduce(
+              (acc, e) =>
+                acc + e.tickets.reduce((a, t) => a + (t.sold || 0), 0),
+              0,
+            );
+            container.innerHTML = `<div class="view active"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h1>Organizer Dashboard</h1><button class="btn btn-primary" onclick="app.handlers.openEventModal()"><i class="ph ph-plus"></i> Create Event</button></div><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom:30px;"><div class="card"><h3>Available Balance</h3><h2 style="color:var(--primary); margin:10px 0;">${fmtMoney(balance)}</h2></div><div class="card"><h3>Total Tickets Sold</h3><h2 style="margin:10px 0;">${totalTicketsSold}</h2></div><div class="card" style="border-color:var(--accent); background:rgba(236,72,153,0.05)"><h3>Total Paid Out</h3><h2 style="color:var(--accent); margin:10px 0;">${fmtMoney(totalPaidOut)}</h2></div></div><div class="card"><h2>My Events</h2>${
+              myEvents.length === 0
+                ? '<p style="color:var(--text-muted); text-align:center; padding:40px 0;">You haven\'t created any events yet.</p>'
+                : `<div class="table-wrapper"><table><thead><tr><th>Event</th><th>Date</th><th>Sales</th><th>Action</th></tr></thead><tbody>${myEvents
+                    .map((e) => {
+                      const totalQty = e.tickets.reduce(
+                        (s, t) => s + (t.qty || 0),
+                        0,
+                      );
+                      const sold = e.tickets.reduce(
+                        (s, t) => s + (t.sold || 0),
+                        0,
+                      );
+                      const isSoldOut = totalQty > 0 && sold >= totalQty;
+                      return `<tr><td><strong>${e.title}</strong>${isSoldOut ? '<span class="badge badge-sold" style="margin-left:8px;">Sold Out</span>' : '<span class="badge badge-open" style="margin-left:8px;">Active</span>'}</td><td>${new Date(e.date).toLocaleDateString("en-GB")}</td><td>${sold} / ${totalQty}</td><td style="white-space:nowrap;"><button class="btn btn-secondary btn-sm" onclick="app.handlers.shareEventLink('${e.id}')" style="margin-right:8px;" title="Copy Link"><i class="ph ph-share-network"></i></button><button class="btn btn-secondary btn-sm" onclick="app.handlers.editEvent('${e.id}')" style="margin-right:8px;">Edit</button><button class="btn btn-danger btn-sm" onclick="app.handlers.deleteEvent('${e.id}')">Delete</button></td></tr>`;
+                    })
+                    .join("")}</tbody></table></div>`
+            }</div><div class="card"><h2>Payout History</h2>${withdrawals.length === 0 ? '<p style="color:var(--text-muted)">No withdrawal requests yet.</p>' : `<div class="table-wrapper"><table><thead><tr><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Date</th></tr></thead><tbody>${withdrawals.map((w) => `<tr><td>${fmtMoney(w.amount)}</td><td>${w.bankName || "-"}</td><td>${w.accountNum || "-"}</td><td><span class="badge" style="background:${w.status === "Approved" ? "var(--success)" : w.status === "Pending" ? "#f59e0b" : "var(--text-muted)"}">${w.status}</span></td><td>${new Date(w.date).toLocaleDateString("en-GB")}</td></tr>`).join("")}</tbody></table></div>`}<div style="margin-top:20px; text-align:right;"><button class="btn btn-primary" onclick="app.handlers.openWithdrawalModal(${balance})" ${balance <= 0 ? "disabled" : ""}>Request Withdrawal</button></div></div></div>`;
+          },
+        },
+        handlers: {
+          filterEvents: () => {
+            const searchTerm = document
+              .getElementById("searchInput")
+              .value.toLowerCase();
+            const cards = document.querySelectorAll(".event-card");
+            cards.forEach((card) => {
+              const title = card.getAttribute("data-title");
+              if (title.includes(searchTerm)) card.style.display = "flex";
+              else card.style.display = "none";
+            });
+          },
+          filterCategory: (cat) => {
+            document
+              .querySelectorAll(".pill")
+              .forEach((p) => p.classList.remove("active"));
+            event.target.closest(".pill").classList.add("active");
+            const cards = document.querySelectorAll(".event-card");
+            cards.forEach((card) => {
+              const cardCat = card.getAttribute("data-category");
+              if (cat === "All" || cardCat === cat) card.style.display = "flex";
+              else card.style.display = "none";
+            });
+          },
+          toggleFavorite: (id) => {
+            const index = app.state.favorites.indexOf(id);
+            if (index > -1) {
+              app.state.favorites.splice(index, 1);
+              app.ui.showToast("Removed from favorites");
+            } else {
+              app.state.favorites.push(id);
+              app.ui.showToast("Added to favorites");
+            }
+            localStorage.setItem(
+              "eh_favorites",
+              JSON.stringify(app.state.favorites),
+            );
+            if (app.router.current === "home") app.router.navigate("home");
+            else if (app.router.current === "favorites")
+              app.router.navigate("favorites");
+            else if (app.router.current === "event")
+              app.router.navigate("event", id);
+          },
+          updateTicketQty: (ticketId, change) => {
+            const ticket = app.state.currentEventData.tickets.find(
+              (t) => String(t.ticketId) == String(ticketId),
+            );
+            if (!ticket) return;
+            const current = app.state.cart[ticketId] || 0;
+            const newQty = current + change;
+            if (newQty < 0) return;
+            const remaining = ticket.qty - ticket.sold;
+            if (newQty > remaining) {
+              app.ui.showToast(
+                `Sorry, only ${remaining} tickets remaining for ${ticket.type}.`,
+                "error",
+              );
+              return;
+            }
+            app.state.cart[ticketId] = newQty;
+            const qtyEl = document.getElementById(`qty-${ticketId}`);
+            if (qtyEl) qtyEl.innerText = newQty;
+            app.handlers.updateSummary();
+          },
+          updateSummary: () => {
+            if (!app.state.currentEventData) return;
+            let subtotal = 0;
+            let breakdownHTML = "";
+            let itemCount = 0;
+            Object.entries(app.state.cart).forEach(([tid, qty]) => {
+              if (qty > 0) {
+                const ticket = app.state.currentEventData.tickets.find(
+                  (t) => String(t.ticketId) == String(tid),
+                );
+                if (ticket) {
+                  subtotal += ticket.price * qty;
+                  itemCount += qty;
+                  breakdownHTML += `<div class="price-row"><span>${ticket.type} (x${qty})</span><span>${fmtMoney(ticket.price * qty)}</span></div>`;
+                }
+              }
+            });
+            const fee = subtotal * app.state.feePercentage;
+            const total = subtotal + fee;
+            const breakdownEl = document.getElementById("breakdownItems");
+            if (breakdownEl) breakdownEl.innerHTML = breakdownHTML;
+            const feeEl = document.getElementById("feeDisplay");
+            if (feeEl) feeEl.innerText = fmtMoney(fee);
+            const totalEl = document.getElementById("totalDisplay");
+            if (totalEl) totalEl.innerText = fmtMoney(total);
+            const btn = document.getElementById("buyBtn");
+            if (btn) {
+              btn.disabled = itemCount === 0;
+              btn.innerText =
+                itemCount === 0
+                  ? "Select Tickets"
+                  : `Checkout - ${fmtMoney(total)}`;
+            }
+          },
+          initBuy: () => {
+            if (!app.state.currentUser) {
+              app.ui.showToast("Please login to purchase.", "info");
+              app.state.isLoginMode = true;
+              app.ui.toggleAuthMode();
+              app.ui.openModal("authModal");
+              return;
+            }
+            app.ui.openModal("checkoutModal");
+            let subtotal = 0;
+            Object.entries(app.state.cart).forEach(([tid, qty]) => {
+              if (qty > 0) {
+                const ticket = app.state.currentEventData.tickets.find(
+                  (t) => String(t.ticketId) == String(tid),
+                );
+                if (ticket) subtotal += ticket.price * qty;
+              }
+            });
+            const fee = subtotal * app.state.feePercentage;
+            const total = subtotal + fee;
+            const imgSrc = app.state.currentEventData.image;
+            document.getElementById("checkoutSummary").innerHTML =
+              `<img src="${imgSrc}" class="checkout-event-img" alt="Event"/><div style="display:flex; justify-content:space-between;"><span>Subtotal</span><span>${fmtMoney(subtotal)}</span></div><div style="display:flex; justify-content:space-between;"><span>Fee (5%)</span><span>${fmtMoney(fee)}</span></div><h3 style="text-align:right; margin-top:10px;">Total: ${fmtMoney(total)}</h3>`;
+            document.getElementById("payAmount").innerText = fmtMoney(total);
+          },
+          processPayment: async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("payBtn");
+            const originalText = btn.innerHTML;
+            app.ui.setLoading(btn, true);
+            for (const [ticketId, qty] of Object.entries(app.state.cart)) {
+              if (qty > 0) {
+                const ticket = app.state.currentEventData.tickets.find(
+                  (t) => String(t.ticketId) == String(ticketId),
+                );
+                if (!ticket) {
+                  app.ui.showToast(
+                    `Error: Ticket ID ${ticketId} not found.`,
+                    "error",
+                  );
+                  app.ui.setLoading(btn, false, originalText);
+                  return;
+                }
+                const subtotal = ticket.price * qty;
+                const fee = subtotal * app.state.feePercentage;
+                const pRes = await api.post("purchase", {
+                  event_id: app.state.currentEventId,
+                  ticket_id: ticketId,
+                  ticket_type: ticket.type,
+                  quantity: qty,
+                  subtotal: subtotal,
+                  fee: fee,
+                  total: subtotal + fee,
+                  buyer_id:
+                    app.state.currentUser.user_id || app.state.currentUser.id,
+                });
+                if (!pRes) {
+                  app.ui.setLoading(btn, false, originalText);
+                  return;
+                }
+              }
+            }
+            app.ui.setLoading(btn, false, originalText);
+            app.ui.closeModal("checkoutModal");
+            app.ui.showToast("Payment Successful!");
+            app.router.navigate("dashboard");
+          },
+          openEventModal: () => {
+            app.state.isEditing = false;
+            app.state.editingId = null;
+            document.getElementById("modalTitle").innerText = "Create Event";
+            document.getElementById("saveEventBtn").innerText = "Publish Event";
+            document.getElementById("eventIdHidden").value = "";
+            document.getElementById("eventTitle").value = "";
+            document.getElementById("eventDate").value = "";
+            document.getElementById("eventLocation").value = "";
+            document.getElementById("eventDescription").value = "";
+            document.getElementById("ticketTypesContainer").innerHTML = "";
+            app.handlers.addTicketRow();
+            app.handlers.clearImage();
+            app.ui.openModal("eventModal");
+          },
+          editEvent: async (id) => {
+            const res = await api.post("getEvents");
+            const event = res.data.find((e) => e.id === id);
+            if (!event) return;
+            app.state.isEditing = true;
+            app.state.editingId = id;
+            document.getElementById("modalTitle").innerText = "Edit Event";
+            document.getElementById("saveEventBtn").innerText = "Update Event";
+            document.getElementById("eventIdHidden").value = id;
+            document.getElementById("eventTitle").value = event.title;
+            document.getElementById("eventDate").value = event.date;
+            document.getElementById("eventLocation").value = event.location;
+            document.getElementById("eventDescription").value =
+              event.description || "";
+            const container = document.getElementById("ticketTypesContainer");
+            container.innerHTML = "";
+            event.tickets.forEach((t) => app.handlers.addTicketRow(t));
+            const img = document.getElementById("imgPreview");
+            const previewContainer = document.getElementById(
+              "imagePreviewContainer",
+            );
+            if (event.image) {
+              img.src = event.image;
+              previewContainer.style.display = "block";
+            } else {
+              previewContainer.style.display = "none";
+            }
+            app.ui.openModal("eventModal");
+          },
+          addTicketRow: (data = null) => {
+            const container = document.getElementById("ticketTypesContainer");
+            const id = Date.now().toString();
+            const ticketId = data ? data.ticketId : "new_" + id;
+            const div = document.createElement("div");
+            div.className = "ticket-type-row";
+            div.style =
+              "background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border);";
+            div.innerHTML = `<input type="hidden" class="t-id" value="${ticketId}" /><button type="button" class="remove-ticket-btn" onclick="this.parentElement.remove()" style="float:right; background:none; border:none; color:var(--danger); cursor:pointer;"><i class="ph ph-x"></i></button><div class="form-group"><label>Name</label><input type="text" class="t-name" value="${data ? data.type : ""}" required /></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Price</label><input type="number" class="t-price" value="${data ? data.price : ""}" /></div><div><label>Qty</label><input type="number" class="t-qty" value="${data ? data.qty : ""}" /></div></div><div class="form-group" style="margin-top:10px"><label>External Link (Optional)</label><input type="url" class="t-link" placeholder="https://eventbrite.com/..." value="${data && data.externalLink ? data.externalLink : ""}" /></div>`;
+            container.appendChild(div);
+          },
+          saveEvent: async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("saveEventBtn");
+            app.ui.setLoading(btn, true);
+            const title = document.getElementById("eventTitle").value.trim();
+            const date = document.getElementById("eventDate").value;
+            const location = document
+              .getElementById("eventLocation")
+              .value.trim();
+            const description = document
+              .getElementById("eventDescription")
+              .value.trim();
+            const category = document.getElementById("eventCategory").value;
+            const fileInput = document.getElementById("eventImageInput");
+            if (
+              !app.state.currentUser ||
+              !(app.state.currentUser.id || app.state.currentUser.user_id)
+            ) {
+              app.ui.showToast(
+                "Session error – please log out and log in again",
+                "error",
+              );
+              app.ui.setLoading(btn, false);
+              return;
+            }
+            const organizerId =
+              app.state.currentUser.id || app.state.currentUser.user_id;
+            const organizerName =
+              app.state.currentUser.organizer_name ||
+              app.state.currentUser.name ||
+              "Unknown";
+            let imagePayload = "";
+            if (fileInput.files.length > 0) {
+              try {
+                imagePayload = await compressImage(fileInput.files[0]);
+              } catch (err) {
+                console.error(err);
+                app.ui.showToast("Failed to process image.", "error");
+                app.ui.setLoading(btn, false);
+                return;
+              }
+            } else if (app.state.isEditing) {
+              const res = await api.post("getEvents");
+              const existingEvent = res.data.find(
+                (ev) => ev.id === app.state.editingId,
+              );
+              if (existingEvent && existingEvent.image) {
+                imagePayload = existingEvent.image;
+              } else {
+                imagePayload = `https://picsum.photos/seed/${title || Date.now()}/400/225`;
+              }
+            } else {
+              imagePayload = `https://picsum.photos/seed/${title || Date.now()}/400/225`;
+            }
+            const ticketRows = document.querySelectorAll(".ticket-type-row");
+            const tickets = Array.from(ticketRows)
+              .map((row) => ({
+                ticketId: row.querySelector(".t-id").value,
+                type: row.querySelector(".t-name").value.trim(),
+                price: Number(row.querySelector(".t-price").value) || 0,
+                qty: Number(row.querySelector(".t-qty").value) || 0,
+                externalLink: row.querySelector(".t-link").value.trim() || "",
+              }))
+              .filter((t) => t.type);
+            const payload = {
+              title,
+              date,
+              location,
+              description,
+              category,
+              tickets,
+              organizer_id: organizerId,
+              organizer_name: organizerName,
+              imageBase64: imagePayload,
+            };
+            let res;
+            if (app.state.isEditing) {
+              payload.event_id = app.state.editingId;
+              res = await api.post("updateEvent", payload);
+            } else {
+              res = await api.post("createEvent", payload);
+            }
+            app.ui.setLoading(
+              btn,
+              false,
+              app.state.isEditing ? "Update Event" : "Publish Event",
+            );
+            if (res?.status === "success") {
+              localStorage.removeItem("eh_events_cache");
+              app.ui.closeModal("eventModal");
+              app.ui.showToast(
+                app.state.isEditing ? "Event updated!" : "Event published!",
+              );
+              app.router.navigate("organizer");
+            } else {
+              app.ui.showToast(res?.message || "Failed to save event", "error");
+            }
+          },
+          previewImage: async (input) => {
+            if (input.files && input.files[0]) {
+              try {
+                const compressedData = await compressImage(input.files[0]);
+                const img = document.getElementById("imgPreview");
+                const container = document.getElementById(
+                  "imagePreviewContainer",
+                );
+                img.src = compressedData;
+                container.style.display = "block";
+              } catch (err) {
+                console.error(err);
+                app.ui.showToast("Error previewing image", "error");
+              }
+            }
+          },
+          clearImage: () => {
+            const input = document.getElementById("eventImageInput");
+            input.value = "";
+            document.getElementById("imagePreviewContainer").style.display =
+              "none";
+          },
+          deleteEvent: async (id) => {
+            if (!confirm("Delete this event?")) return;
+            await api.post("deleteEvent", { eventId: id });
+            localStorage.removeItem("eh_events_cache");
+            app.router.navigate("organizer");
+          },
+          openWithdrawalModal: (amount) => {
+            document.getElementById("withdrawalAmountInput").value =
+              amount.toFixed(2);
+            app.ui.openModal("withdrawalModal");
+          },
+          requestWithdrawal: async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const organizerId =
+              app.state.currentUser.id || app.state.currentUser.user_id;
+            if (!organizerId) {
+              app.ui.showToast("Error: User not identified.", "error");
+              return;
+            }
+            const res = await api.post("requestWithdrawal", {
+              organizerId: organizerId,
+              amount: fd.get("amount"),
+              bankName: fd.get("bankName"),
+              accountNum: fd.get("accountNum"),
+            });
+            if (res) {
+              app.ui.closeModal("withdrawalModal");
+              app.ui.showToast("Request Sent!");
+              app.router.navigate("organizer");
+            }
+          },
+          shareEventLink: (id) => {
+            const url = `${window.location.origin}${window.location.pathname}?eventId=${id}`;
+            if (navigator.clipboard) {
+              navigator.clipboard
+                .writeText(url)
+                .then(() => {
+                  app.ui.showToast("Link copied!");
+                })
+                .catch((err) => {
+                  app.ui.showToast("Failed to copy", "error");
+                });
+            } else {
+              const textArea = document.createElement("textarea");
+              textArea.value = url;
+              document.body.appendChild(textArea);
+              textArea.select();
+              try {
+                document.execCommand("copy");
+                app.ui.showToast("Link copied!");
+              } catch (err) {
+                app.ui.showToast("Failed to copy", "error");
+              }
+              document.body.removeChild(textArea);
+            }
+          },
+          openTicketDetail: (dataStr) => {
+            const data = JSON.parse(decodeURIComponent(dataStr));
+            app.state.currentTicketData = data;
+            const container = document.getElementById("ticketForCapture");
+            const highResQR = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(data.qrData)}`;
+            container.innerHTML = `<div class="ticket-visual ticket-visual-large" style="width: 600px;"><div class="tv-cutout left" style="width: 30px; height: 30px; left: -15px;"></div><div class="tv-cutout right" style="width: 30px; height: 30px; right: -15px;"></div><div class="tv-main" style="padding: 40px;"><div><div class="tv-label" style="font-size: 0.9rem;">EVENT TICKET</div><h3 class="tv-title" style="font-size: 2rem;">${data.title}</h3><div class="tv-row" style="font-size: 1.2rem; gap: 12px;"><i class="ph ph-calendar-blank" style="font-size: 1.4rem;"></i><span>${data.date}</span></div><div class="tv-row" style="font-size: 1.2rem; gap: 12px;"><i class="ph ph-ticket" style="font-size: 1.4rem;"></i><span>${data.type} × ${data.qty}</span></div></div><div style="margin-top: 30px;"><div class="tv-label" style="font-size: 0.9rem;">TOTAL PAID</div><div class="tv-value" style="font-size: 1.5rem; color:var(--primary);">${data.total}</div></div></div><div class="tv-stub" style="width: 100%; padding: 40px;"><img src="${highResQR}" alt="QR Code" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;" /><div class="tv-label" style="font-size: 1rem; margin-top: 20px;">SCAN TO ENTER</div></div></div>`;
+            app.ui.openModal("ticketDetailModal");
+          },
+          downloadTicket: async () => {
+            const element = document.getElementById("ticketForCapture");
+            app.ui.showToast("Generating image...", "info");
+            try {
+              const canvas = await html2canvas(element, {
+                scale: 2,
+                backgroundColor: "#ffffff",
+              });
+              const link = document.createElement("a");
+              link.download = `ticket-${app.state.currentTicketData.id}.png`;
+              link.href = canvas.toDataURL();
+              link.click();
+            } catch (err) {
+              console.error(err);
+              app.ui.showToast("Failed to download ticket.", "error");
+            }
+          },
+          shareTicket: async () => {
+            const element = document.getElementById("ticketForCapture");
+            app.ui.showToast("Preparing share...", "info");
+            try {
+              const canvas = await html2canvas(element, {
+                scale: 2,
+                backgroundColor: "#ffffff",
+              });
+              canvas.toBlob(async (blob) => {
+                const file = new File(
+                  [blob],
+                  `ticket-${app.state.currentTicketData.id}.png`,
+                  { type: "image/png" },
+                );
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                  try {
+                    await navigator.share({
+                      title: "My Event Ticket",
+                      text: `Ticket for ${app.state.currentTicketData.title}`,
+                      files: [file],
+                    });
+                  } catch (err) {}
+                } else {
+                  app.ui.showToast(
+                    "Sharing not supported. Download instead.",
+                    "info",
+                  );
+                }
+              });
+            } catch (err) {
+              console.error(err);
+              app.ui.showToast("Failed to share ticket.", "error");
+            }
+          },
+        },
+        auth: {
+          handleAuth: async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const endpoint = app.state.isLoginMode ? "login" : "register";
+            let payload = Object.fromEntries(fd.entries());
+            if (payload.email)
+              payload.email = payload.email.trim().toLowerCase();
+            if (payload.password) payload.password = payload.password.trim();
+            if (!app.state.isLoginMode) {
+              if (!payload.role) payload.role = "attendee";
+              payload.organizer_name = payload.brandName || "";
+              delete payload.brandName;
+            } else {
+              payload = {
+                email: payload.email,
+                password: payload.password,
+                username: payload.email,
+              };
+            }
+            const res = await api.post(endpoint, payload);
+            if (res && res.status === "success" && res.user) {
+              const normalizedUser = {
+                ...res.user,
+                id: res.user.id || res.user.user_id || String(Date.now()),
+              };
+              if (normalizedUser.password) delete normalizedUser.password;
+              app.state.currentUser = normalizedUser;
+              localStorage.setItem(
+                "eh_session",
+                JSON.stringify(normalizedUser),
+              );
+              app.ui.closeModal("authModal");
+              app.ui.checkSession();
+              const hasItemsInCart = Object.values(app.state.cart).some(
+                (qty) => qty > 0,
+              );
+              if (hasItemsInCart && app.state.currentEventId) {
+                app.ui.showToast("Account created! Proceeding to checkout...");
+                app.ui.openModal("checkoutModal");
+              } else {
+                if (normalizedUser.role === "organizer") {
+                  app.router.navigate("organizer");
+                } else {
+                  app.router.navigate("home");
+                }
+              }
+              app.ui.showToast(
+                "Welcome back, " + (normalizedUser.name || "User") + "!",
+              );
+            } else {
+              app.ui.showToast(
+                res?.message || "Login / registration failed",
+                "error",
+              );
+            }
+          },
+          logout: () => {
+            localStorage.removeItem("eh_session");
+            localStorage.removeItem("eh_user_profile");
+            app.state.currentUser = null;
+            window.location.reload();
+          },
+        },
+        ui: {
+          setLoading: (btn, isLoading, originalText = "") => {
+            if (isLoading) {
+              btn.disabled = true;
+              btn.innerHTML = `<span class="spinner"></span> Loading...`;
+            } else {
+              btn.disabled = false;
+              btn.innerHTML =
+                originalText || btn.dataset.originalText || "Submit";
+            }
+          },
+          openModal: (id) => document.getElementById(id).classList.add("open"),
+          closeModal: (id) =>
+            document.getElementById(id).classList.remove("open"),
+          openAuthModal: (mode = "login") => {
+            app.state.isLoginMode = mode === "login";
+            app.ui.toggleAuthMode();
+            app.ui.openModal("authModal");
+          },
+          toggleAuthMode: () => {
+            app.state.isLoginMode = !app.state.isLoginMode;
+            const isLogin = app.state.isLoginMode;
+            document.getElementById("authTitle").innerText = isLogin
+              ? "Login"
+              : "Sign Up";
+            document.getElementById("signupFields").style.display = isLogin
+              ? "none"
+              : "block";
+            document.querySelector("#authForm button").innerText = isLogin
+              ? "Login"
+              : "Sign Up";
+            const nameInput = document.querySelector('input[name="name"]');
+            if (nameInput) {
+              if (isLogin) nameInput.removeAttribute("required");
+              else nameInput.setAttribute("required", "");
+            }
+            if (isLogin) {
+              document.getElementById("brandNameGroup").style.display = "none";
+            } else {
+              const radios = document.getElementsByName("role");
+              let isOrg = false;
+              for (let r of radios) {
+                if (r.checked && r.value === "organizer") isOrg = true;
+              }
+              document.getElementById("brandNameGroup").style.display = isOrg
+                ? "block"
+                : "none";
+            }
+          },
+          toggleBrandName: (show) => {
+            const el = document.getElementById("brandNameGroup");
+            el.style.display = show ? "block" : "none";
+          },
+          toggleUserMenu: () => {
+            const menu = document.getElementById("userMenuDropdown");
+            menu.classList.toggle("open");
+          },
+          showContactUs: () => {
+            app.ui.closeModal("userMenuDropdown");
+            app.ui.openModal("contactModal");
+          },
+
+          // --- NEW PROFILE UI FUNCTIONS ---
+          openProfileModal: () => {
+            const user = app.state.currentUser;
+            const profileContent =
+              document.getElementById("profileMenuContent");
+            const nameEl = document.getElementById("profileNameDisplay");
+            const emailEl = document.getElementById("profileEmailDisplay");
+
+            if (user) {
+              nameEl.innerText = user.name || "User";
+              emailEl.innerText = user.email || "";
+
+              // Generate Menu Items
+              profileContent.innerHTML = `
+                    <div class="profile-menu-item" onclick="app.ui.openEditProfile()"><i class="ph ph-user-circle"></i> Manage Profile</div>
+                    <div class="profile-menu-item" onclick="app.ui.showSecurity()"><i class="ph ph-shield-check"></i> Password & Security</div>
+                    ${user.role === "organizer" ? '<div class="profile-menu-item"><i class="ph ph-bell"></i> Notifications <div style="margin-left:auto"><label class="switch"><input type="checkbox" checked onchange="app.ui.showToast(\'Notifications Enabled\')"><span class="slider round"></span></label></div></div>' : ""}
+                    <div class="profile-menu-item" onclick="app.ui.showToast('Coming Soon')"><i class="ph ph-globe"></i> Language</div>
+                    <div class="profile-menu-item" onclick="app.ui.openModal('aboutModal')"><i class="ph ph-info"></i> About Us</div>
+                    <div class="profile-menu-item" onclick="app.ui.showToast('Theme customization coming soon!')"><i class="ph ph-palette"></i> Theme</div>
+                    <div class="profile-menu-item" onclick="app.ui.openModal('helpModal')"><i class="ph ph-question"></i> Help Center</div>
+                    <div class="profile-menu-item" onclick="app.ui.showContactUs()"><i class="ph ph-envelope"></i> Contact Us</div>
+                    <div class="profile-menu-item danger" onclick="app.auth.logout()"><i class="ph ph-sign-out"></i> Logout</div>
+                `;
+            } else {
+              nameEl.innerText = "Guest";
+              emailEl.innerText = "Login to continue";
+              profileContent.innerHTML = `
+                    <div style="padding: 20px;">
+                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="app.ui.closeModal('profileModal'); app.ui.openAuthModal('login')">Login</button>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 20px;" onclick="app.ui.closeModal('profileModal'); app.ui.openAuthModal('signup')">Create Account</button>
+                        <hr style="border-color: var(--border); margin: 20px 0;">
+                        <div class="profile-menu-item" onclick="app.ui.openModal('aboutModal')"><i class="ph ph-info"></i> About Us</div>
+                        <div class="profile-menu-item" onclick="app.ui.openModal('helpModal')"><i class="ph ph-question"></i> Help Center</div>
+                        <div class="profile-menu-item" onclick="app.ui.showContactUs()"><i class="ph ph-envelope"></i> Contact Us</div>
+                    </div>
+                `;
+            }
+            app.ui.openModal("profileModal");
+          },
+
+          triggerProfilePicUpload: () => {
+            document.getElementById("profilePicInput").click();
+          },
+
+          handleProfilePicChange: async (input) => {
+            if (input.files && input.files[0]) {
+              try {
+                const compressed = await compressImage(input.files[0]);
+                const profile = app.state.userProfile || {};
+                profile.pic = compressed;
+                app.state.userProfile = profile;
+                localStorage.setItem(
+                  "eh_user_profile",
+                  JSON.stringify(profile),
+                );
+                app.ui.loadProfilePic();
+                app.ui.showToast("Profile picture updated!");
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          },
+
+          loadProfilePic: () => {
+            const profile = app.state.userProfile || {};
+            const pic = profile.pic;
+            const headerImg = document.getElementById("mobileHeaderProfile");
+            const largeImg = document.getElementById("profilePicLarge");
+            const placeholder = document.getElementById(
+              "profilePicPlaceholder",
+            );
+
+            if (pic) {
+              headerImg.innerHTML = `<img src="${pic}" />`;
+              if (largeImg) {
+                largeImg.src = pic;
+                largeImg.style.display = "block";
+                if (placeholder) placeholder.style.display = "none";
+              }
+            } else {
+              headerImg.innerHTML = `<i class="ph ph-user" style="font-size: 1.2rem; color: white;"></i>`;
+              if (largeImg) {
+                largeImg.style.display = "none";
+                if (placeholder) placeholder.style.display = "block";
+              }
+            }
+          },
+
+          checkSession: () => {
+            const user = app.state.currentUser;
+            if (user) {
+              if (!user.id && user.user_id) {
+                user.id = user.user_id;
+              }
+              document.getElementById("loggedOutNav").style.display = "none";
+              document.getElementById("loggedInNav").style.display = "flex";
+              document.getElementById("userNameDisplay").innerText = user.name;
+              const roleBtn = document.getElementById("roleBtn");
+              const mobileDash = document.getElementById("mobileDashBtn");
+              const mobileTickets = document.getElementById("mobileTicketsBtn");
+              const mobileProfile = document.getElementById("mobileProfileBtn");
+              mobileTickets.onclick = () => app.router.navigate("dashboard");
+              if (user.role === "organizer") {
+                roleBtn.innerText = "Organizer Panel";
+                roleBtn.onclick = () => app.router.navigate("organizer");
+                mobileDash.onclick = () => app.router.navigate("organizer");
+                mobileDash.style.display = "flex";
+              } else {
+                roleBtn.style.display = "none";
+                mobileDash.style.display = "none";
+              }
+            }
+            app.ui.loadProfilePic(); // Load pic on session check
+          },
+          updateMobileNav: (view) => {
+            document
+              .querySelectorAll(".mobile-nav-item")
+              .forEach((el) => el.classList.remove("active"));
+            if (view === "home")
+              document
+                .querySelectorAll(".mobile-nav-item")[0]
+                .classList.add("active");
+            else if (view === "favorites")
+              document
+                .querySelectorAll(".mobile-nav-item")[1]
+                .classList.add("active");
+            else if (view === "dashboard")
+              document
+                .getElementById("mobileTicketsBtn")
+                .classList.add("active");
+            else if (view === "organizer")
+              document.getElementById("mobileDashBtn").classList.add("active");
+          },
+          showToast: (msg, type = "success") => {
+            const c = document.getElementById("toast-container");
+            const t = document.createElement("div");
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="ph ${type === "error" ? "ph-warning" : "ph-check"}"></i><span>${msg}</span>`;
+            c.appendChild(t);
+            setTimeout(() => t.classList.add("show"), 50);
+            setTimeout(() => {
+              t.classList.remove("show");
+              setTimeout(() => t.remove(), 400);
+            }, 3000);
+          },
+        },
+      };
+      document.addEventListener("DOMContentLoaded", app.init);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel | EventHub</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --accent: #ec4899;
+        --bg-dark: #0f172a;
+        --bg-card: rgba(30, 41, 59, 0.7);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.1);
+        --success: #10b981;
+        --danger: #ef4444;
+        --glass: blur(12px);
+        --shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        min-height: 100vh;
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(99, 102, 241, 0.15) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(236, 72, 153, 0.15) 0%,
+            transparent 40%
+          );
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      button {
+        cursor: pointer;
+        border: none;
+        outline: none;
+        transition: all 0.2s ease;
+      }
+      .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .btn-primary {
+        background: var(--gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      }
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .btn-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+      .card {
+        background: var(--bg-card);
+        backdrop-filter: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+      }
+      .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      th {
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .masked-acct-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px dashed var(--text-muted);
+        color: var(--text-muted);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-block;
+        transition: all 0.2s;
+        min-width: 100px;
+      }
+      .masked-acct-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-color: var(--primary);
+      }
+      .details-row {
+        display: none;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px;
+        margin-top: 8px;
+        border-radius: 8px;
+        border-left: 2px solid var(--accent);
+      }
+      .details-row.visible {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: slideDown 0.3s ease;
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .login-screen {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: white;
+        margin-bottom: 16px;
+        font-size: 1rem;
+      }
+      #toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        background: rgba(30, 41, 59, 0.95);
+        border-left: 4px solid var(--danger);
+        padding: 16px 24px;
+        border-radius: 8px;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px 10px;
+        }
+        .login-screen .card {
+          width: 100%;
+          max-width: 400px;
+        }
+        header .container {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+        header .btn {
+          width: 100%;
+        }
+        div[style*="grid-template-columns: repeat(4"] {
+          grid-template-columns: 1fr 1fr !important;
+          gap: 12px;
+        }
+        .card h1 {
+          font-size: 1.5rem;
+        }
+        .card h3 {
+          font-size: 0.9rem;
+        }
+        .card {
+          padding: 16px;
+        }
+        #toast-container {
+          bottom: 20px;
+          left: 20px;
+          right: 20px;
+        }
+        .toast {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Gate -->
+    <div id="loginGate" class="login-screen">
+      <div class="card">
+        <h2 style="text-align: center; margin-bottom: 20px">Admin Access</h2>
+        <form onsubmit="app.auth.login(event)">
+          <input
+            type="text"
+            id="adminUser"
+            placeholder="Username (admin)"
+            required
+          />
+          <input
+            type="password"
+            id="adminPass"
+            placeholder="Password (admin)"
+            required
+          />
+          <button type="submit" class="btn btn-primary" style="width: 100%">
+            Enter Dashboard
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDash" style="display: none">
+      <header
+        style="
+          background: rgba(15, 23, 42, 0.9);
+          border-bottom: 1px solid var(--border);
+          padding: 20px 0;
+          margin-bottom: 40px;
+        "
+      >
+        <div
+          class="container"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h1>Platform Admin</h1>
+          <button class="btn btn-danger" onclick="window.location.reload()">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div class="container">
+        <!-- GLOBAL STATS -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <div class="card">
+            <h3>Total Platform Revenue</h3>
+            <h1 id="globRev" style="color: var(--primary); margin: 10px 0">
+              ₦0
+            </h1>
+            <small style="color: var(--text-muted); font-size: 0.7rem"
+              >(Internal Sales + Fees)</small
+            >
+          </div>
+          <div class="card">
+            <h3>Total Tickets Sold</h3>
+            <h1 id="globTickets" style="margin: 10px 0">0</h1>
+            <small style="color: var(--text-muted); font-size: 0.7rem"
+              >(Internal Only)</small
+            >
+          </div>
+          <div class="card">
+            <h3>Total Users</h3>
+            <h1 id="globUsers" style="margin: 10px 0">0</h1>
+          </div>
+          <div
+            class="card"
+            style="
+              border: 2px solid var(--success);
+              background: rgba(16, 185, 129, 0.1);
+            "
+          >
+            <h3>
+              <i class="ph ph-trend-up" style="margin-right: 8px"></i>Platform
+              Profit
+            </h3>
+            <h1 id="globProfit" style="color: var(--success); margin: 10px 0">
+              ₦0.00
+            </h1>
+            <small style="color: var(--text-muted); font-size: 0.75rem"
+              >5% of Internal Sales</small
+            >
+          </div>
+        </div>
+
+        <!-- PAYOUT REQUESTS SECTION -->
+        <div
+          class="card"
+          style="margin-bottom: 40px; padding: 0; overflow: hidden"
+        >
+          <div style="padding: 24px 24px 0 24px">
+            <h3>Payout Requests</h3>
+            <small style="color: var(--text-muted)">Requires Approval</small>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Organizer</th>
+                  <th>Bank Name</th>
+                  <th>Account Number</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawalsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SYSTEM TABLES -->
+        <div class="card" style="padding: 0; overflow: hidden">
+          <div style="padding: 24px 24px 0 24px">
+            <h3>All Events System-Wide</h3>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Organizer ID</th>
+                  <th>Gross Sales</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="eventsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden">
+          <div style="padding: 24px 24px 0 24px"><h3>User Management</h3></div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="toast-container"></div>
+
+    <script>
+      // ---------------------------------------------------------
+      // !!! CONFIGURATION: ENSURE THIS URL IS CORRECT !!!
+      // ---------------------------------------------------------
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbwC84QF4q6lPfTDsbnnWbWfH0nHX9k0ID_iNdeyPoE3CQ-YA38K5lC_Yjr2h9cMHSP8cg/exec";
+      // ---------------------------------------------------------
+
+      const fmtMoney = (amount) => {
+        const num = parseFloat(amount) || 0;
+        return "₦" + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      };
+
+      const app = {
+        platformFee: 0.05,
+
+        init: () => {
+          if (localStorage.getItem("eh_admin_session")) {
+            document.getElementById("loginGate").style.display = "none";
+            document.getElementById("adminDash").style.display = "block";
+            app.ui.loadDashboard();
+          }
+        },
+
+        api: async (action, data = {}) => {
+          try {
+            const response = await fetch(API_URL, {
+              method: "POST",
+              body: JSON.stringify({ action, ...data }),
+            });
+            const result = await response.json();
+            return result;
+          } catch (err) {
+            console.error("API Error", err);
+            app.ui.toast("Connection Error", "error");
+            return {
+              status: "error",
+              message: "Network Error: " + err.message,
+            };
+          }
+        },
+
+        ui: {
+          loadDashboard: async () => {
+            // 1. Fetch Stats
+            const statsRes = await app.api("getAdminStats");
+            if (statsRes.status === "success") {
+              const s = statsRes.data;
+              document.getElementById("globRev").innerText = fmtMoney(
+                s.totalRevenue,
+              );
+              document.getElementById("globTickets").innerText = s.totalTickets;
+              document.getElementById("globUsers").innerText = s.totalUsers;
+              document.getElementById("globProfit").innerText = fmtMoney(
+                s.platformProfit,
+              );
+            }
+
+            // 2. Fetch EVENTS
+            const eRes = await app.api("getEvents");
+            let eventsData = [];
+            if (eRes.status === "success") {
+              eventsData = eRes.data;
+            }
+
+            // 3. Fetch USERS
+            const uRes = await app.api("getAllUsers");
+            let usersData = [];
+            if (uRes.status === "success") {
+              usersData = uRes.data;
+              const uTable = document.getElementById("usersTable");
+              uTable.innerHTML = usersData
+                .map((u) => {
+                  const isBanned = !!u.banned;
+                  const statusBadge = isBanned
+                    ? `<span class="badge" style="background:var(--danger);">Banned</span>`
+                    : `<span class="badge" style="background:var(--success);">Active</span>`;
+                  const btnText = isBanned ? "Unban" : "Ban";
+                  const btnClass = isBanned
+                    ? "btn btn-success"
+                    : "btn btn-danger";
+                  const btnIcon = isBanned
+                    ? "ph-arrow-u-up-left"
+                    : "ph-prohibit";
+                  return `
+                    <tr>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge" style="background:${u.role === "organizer" ? "var(--primary)" : "var(--text-muted)"}">${u.role}</span></td>
+                        <td>${statusBadge}</td>
+                        <td><button class="${btnClass} btn-sm" onclick="app.handlers.toggleBan('${u.id}', ${!isBanned})"><i class="ph ${btnIcon}"></i> ${btnText}</button></td>
+                    </tr>`;
+                })
+                .join("");
+            }
+
+            // 4. Render Events Table
+            if (eRes.status === "success") {
+              const eTable = document.getElementById("eventsTable");
+              eTable.innerHTML = eRes.data
+                .map((e) => {
+                  let eventSales = 0;
+                  if (e.tickets)
+                    eventSales = e.tickets.reduce(
+                      (acc, t) => acc + t.price * t.sold,
+                      0,
+                    );
+                  const gross = eventSales * (1 + app.platformFee);
+                  return `
+                <tr>
+                    <td>${e.title}</td>
+                    <td style="color:var(--text-muted); font-size:0.9rem;">${e.organizerId || "Unknown"}</td>
+                    <td>${fmtMoney(gross)}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="app.handlers.deleteEvent('${e.id}')">Delete</button></td>
+                </tr>`;
+                })
+                .join("");
+            }
+
+            // 5. Fetch & Render WITHDRAWALS
+            const wRes = await app.api("getAllWithdrawals");
+            const wTable = document.getElementById("withdrawalsTableBody");
+
+            // IMPROVED ERROR REPORTING
+            if (wRes.status !== "success") {
+              console.error("Withdrawal Fetch Error:", wRes);
+              wTable.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger);">Error loading requests: ${wRes.message || "Unknown Action (Check GAS Deployment)"}</td></tr>`;
+            } else if (wRes.data.length === 0) {
+              wTable.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding: 20px;">No payout requests yet.</td></tr>`;
+            } else {
+              wTable.innerHTML = wRes.data
+                .map((w) => {
+                  // Find user based on saved organizer_id
+                  const org = usersData.find(
+                    (u) =>
+                      u.id === w.organizerId || u.user_id === w.organizerId,
+                  );
+                  const orgName = org
+                    ? org.name
+                    : `<span style="color:var(--danger);">Unknown (ID: ${w.organizerId})</span>`;
+                  const maskedBtn = `<button class="masked-acct-btn" onclick="app.ui.toggleDetails('${w.id}')">**** ${w.accountNum ? w.accountNum.slice(-4) : "****"}</button>`;
+
+                  return `
+                    <tr>
+                        <td>${orgName}</td>
+                        <td>${w.bankName || "-"}</td>
+                        <td>${maskedBtn}</td>
+                        <td style="font-weight:600; color:var(--primary);">${fmtMoney(w.amount)}</td>
+                        <td>${new Date(w.date).toLocaleDateString()}</td>
+                        <td><span class="badge" style="background:${w.status === "Approved" ? "var(--success)" : "var(--text-muted)"}">${w.status}</span></td>
+                        <td>
+                            ${w.status !== "Approved" ? `<button class="btn btn-success btn-sm" onclick="app.handlers.approveWithdrawal('${w.id}')">Approve</button>` : `<span style="color:var(--success); font-weight:600;">Paid</span>`}
+                        </td>
+                    </tr>
+                    <tr class="details-row" id="details-${w.id}">
+                        <td colspan="7" style="color:var(--text-muted); padding-left:12px;">
+                            <strong>Full Account Details:</strong><br>
+                            <span style="color:white; font-weight:600;">${w.accountNum}</span>
+                        </td>
+                    </tr>`;
+                })
+                .join("");
+            }
+          },
+
+          toggleDetails: (id) => {
+            const row = document.getElementById(`details-${id}`);
+            if (row) {
+              document
+                .querySelectorAll(".details-row.visible")
+                .forEach((el) => el.classList.remove("visible"));
+              row.classList.add("visible");
+            }
+          },
+
+          toast: (msg, type = "info") => {
+            const c = document.getElementById("toast-container");
+            const t = document.createElement("div");
+            t.className = "toast";
+            const color =
+              type === "error"
+                ? "var(--danger)"
+                : type === "success"
+                  ? "var(--success)"
+                  : "var(--primary)";
+            t.style.borderLeftColor = color;
+            t.innerHTML = `<i class="ph ph-warning"></i> ${msg}`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+          },
+        },
+
+        handlers: {
+          approveWithdrawal: async (id) => {
+            if (!confirm("Approve this payout request?")) return;
+            const res = await app.api("approveWithdrawalAction", {
+              withdrawalId: id,
+            });
+            if (res.status === "success") {
+              app.ui.toast("Payout Approved.");
+              app.ui.loadDashboard();
+            } else {
+              app.ui.toast(res.message, "error");
+            }
+          },
+
+          deleteEvent: async (id) => {
+            if (!confirm("Delete this event?")) return;
+            const res = await app.api("deleteEvent", { eventId: id });
+            if (res.status === "success") {
+              app.ui.toast("Event deleted.");
+              app.ui.loadDashboard();
+            } else {
+              app.ui.toast(res.message, "error");
+            }
+          },
+
+          toggleBan: async (id, newBanStatus) => {
+            const actionName = newBanStatus ? "ban" : "unban";
+            if (!confirm(`Are you sure you want to ${actionName} this user?`))
+              return;
+            const res = await app.api("updateUserBanAction", {
+              userId: id,
+              banned: newBanStatus,
+            });
+            if (res.status === "success") {
+              app.ui.toast(
+                `User ${actionName}ned successfully.`,
+                newBanStatus ? "error" : "success",
+              );
+              app.ui.loadDashboard();
+            } else {
+              app.ui.toast(res.message, "error");
+            }
+          },
+        },
+
+        auth: {
+          login: (e) => {
+            e.preventDefault();
+            const u = document.getElementById("adminUser").value;
+            const p = document.getElementById("adminPass").value;
+            if (u === "admin" && p === "admin") {
+              localStorage.setItem("eh_admin_session", "true");
+              document.getElementById("loginGate").style.display = "none";
+              document.getElementById("adminDash").style.display = "block";
+              app.ui.loadDashboard();
+            } else {
+              app.ui.toast("Invalid Admin Credentials", "error");
+            }
+          },
+        },
+      };
+
+      document.addEventListener("DOMContentLoaded", app.init);
+    </script>
+  </body>
+</html>
