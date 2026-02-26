@@ -215,19 +215,23 @@
       .chat-toggle-btn:hover {
         transform: scale(1.05);
       }
+      /* RED BADGE STYLES */
       .unread-badge {
         position: absolute;
-        top: 0;
-        right: 0;
-        width: 20px;
-        height: 20px;
+        top: -4px;
+        right: -4px;
+        width: 22px;
+        height: 22px;
         background: var(--danger);
+        color: white;
         border-radius: 50%;
         font-size: 0.7rem;
-        display: none;
+        font-weight: 700;
+        display: none; /* Hidden by default */
         align-items: center;
         justify-content: center;
-        font-weight: 700;
+        border: 2px solid var(--bg-dark); /* Creates a nice outline effect */
+        z-index: 10;
       }
       .chat-window {
         position: absolute;
@@ -502,15 +506,21 @@
           <!-- Content injected by JS -->
         </div>
         <div class="chat-footer" id="chatFooter" style="display: none">
-          <input
-            type="text"
+          <textarea
             class="chat-input"
             id="chatInput"
             placeholder="Type a message..."
-          />
+            rows="1"
+            onkeydown="
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                app.chat.sendMessage();
+              }
+            "
+          ></textarea>
           <button
             class="btn btn-primary"
-            style="padding: 10px 12px"
+            style="padding: 10px 12px; height: 40px; align-self: flex-end"
             onclick="app.chat.sendMessage()"
           >
             <i class="ph ph-paper-plane-tilt"></i>
@@ -519,7 +529,7 @@
       </div>
       <button class="chat-toggle-btn" onclick="app.chat.toggleWindow()">
         <i class="ph ph-chat-dots"></i>
-        <span class="unread-badge" id="chatUnread">0</span>
+        <span class="unread-badge" id="adminChatBadge">0</span>
       </button>
     </div>
 
@@ -633,6 +643,7 @@
             } else {
               wTable.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted)">No requests</td></tr>`;
             }
+            app.chat.startBadgePolling();
           },
           toggleDetails: (id) => {
             const row = document.getElementById(`details-${id}`);
@@ -711,6 +722,7 @@
           adminId: "ADMIN_PLATFORM",
           currentRecipient: null,
           pollInterval: null,
+          badgeInterval: null, // NEW: For checking unread count
 
           toggleWindow: async function () {
             const win = document.getElementById("chatWindow");
@@ -718,22 +730,63 @@
             win.classList.toggle("open");
 
             if (isNowOpen) {
+              // Hide badge immediately when opening
+              document.getElementById("adminChatBadge").style.display = "none";
+
               await this.loadChatList();
-              // Start polling
+
+              // Start polling for messages inside chat
               if (!this.pollInterval)
                 this.pollInterval = setInterval(
                   () => this.refreshMessages(),
                   3000,
                 );
+
+              // Stop polling for badge since we are inside
+              if (this.badgeInterval) {
+                clearInterval(this.badgeInterval);
+                this.badgeInterval = null;
+              }
             } else {
+              // Closing chat
               if (this.pollInterval) {
                 clearInterval(this.pollInterval);
                 this.pollInterval = null;
               }
+
+              // Restart badge polling
+              this.startBadgePolling();
+            }
+          },
+          // NEW: Function to check for unread messages
+          checkUnread: async function () {
+            if (
+              document.getElementById("chatWindow").classList.contains("open")
+            )
+              return; // Don't check if open
+
+            const res = await app.api("getUnreadCount", {
+              userId: this.adminId,
+            });
+            if (res.status === "success" && res.count > 0) {
+              const badge = document.getElementById("adminChatBadge");
+              badge.innerText = res.count > 9 ? "9+" : res.count;
+              badge.style.display = "flex";
+            } else {
+              document.getElementById("adminChatBadge").style.display = "none";
+            }
+          },
+
+          // NEW: Start polling for badge
+          startBadgePolling: function () {
+            this.checkUnread(); // Check immediately
+            if (!this.badgeInterval) {
+              this.badgeInterval = setInterval(() => this.checkUnread(), 5000); // Check every 5s
             }
           },
 
           loadChatList: async function () {
+            // ... (Keep existing loadChatList code) ...
             document.getElementById("chatTitle").innerText = "Messages";
             document.getElementById("chatFooter").style.display = "none";
             document.getElementById("chatBody").innerHTML =
@@ -742,7 +795,7 @@
             const res = await app.api("getChatList", {
               role: "admin",
               includeAll: true,
-            }); // includeAll gets all organizers
+            });
 
             if (res.status === "success" && res.data.length > 0) {
               document.getElementById("chatBody").innerHTML = res.data
@@ -813,10 +866,13 @@
 
           sendMessage: async function () {
             const input = document.getElementById("chatInput");
-            const msg = input.value.trim();
+            const msg = input.value.trim(); // value works for textarea too
             if (!msg || !this.currentRecipient) return;
 
+            // Clear input immediately for better "fast" feel
             input.value = "";
+            // Auto-resize textarea back to small
+            input.style.height = "auto";
 
             await app.api("sendMessage", {
               senderId: this.adminId,
