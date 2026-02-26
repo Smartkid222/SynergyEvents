@@ -210,6 +210,26 @@
         justify-content: center;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+      }
+      /* RED BADGE STYLES */
+      .unread-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 4px; /* Padding for numbers like '10' */
+        background: #ef4444; /* Red color */
+        color: white;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--bg-dark);
+        z-index: 10;
       }
       .chat-window {
         position: absolute;
@@ -2050,15 +2070,21 @@
           </div>
         </div>
         <div class="chat-footer" id="orgChatFooter" style="display: none">
-          <input
-            type="text"
+          <textarea
             class="chat-input"
             id="orgChatInput"
             placeholder="Type message..."
-          />
+            rows="1"
+            onkeydown="
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                app.chat.send();
+              }
+            "
+          ></textarea>
           <button
             class="btn btn-primary"
-            style="padding: 8px 10px"
+            style="padding: 8px 10px; height: 38px"
             onclick="app.chat.send()"
           >
             <i class="ph ph-paper-plane-tilt"></i>
@@ -2067,6 +2093,7 @@
       </div>
       <button class="chat-toggle-btn" onclick="app.chat.toggle()">
         <i class="ph ph-chat-dots"></i>
+        <span class="unread-badge" id="orgChatBadge">0</span>
       </button>
     </div>
 
@@ -2239,6 +2266,10 @@
             app.router.navigate("event", eventId);
           } else {
             app.router.navigate("home");
+          }
+          // Start checking for unread messages if user is logged in
+          if (app.state.currentUser) {
+            app.chat.startBadgePolling();
           }
         },
         router: {
@@ -4454,6 +4485,7 @@
           adminId: "ADMIN_PLATFORM",
           isOpen: false,
           poller: null,
+          badgePoller: null, // NEW
 
           toggle: async function () {
             this.isOpen = !this.isOpen;
@@ -4461,6 +4493,9 @@
             win.classList.toggle("open", this.isOpen);
 
             if (this.isOpen) {
+              // Hide badge immediately
+              document.getElementById("orgChatBadge").style.display = "none";
+
               if (!app.state.currentUser) {
                 app.ui.showToast("Login to chat", "info");
                 this.isOpen = false;
@@ -4468,34 +4503,67 @@
                 app.ui.openAuthModal("login");
                 return;
               }
+
               // Initialize
               document.getElementById("orgChatFooter").style.display = "flex";
               document.getElementById("orgChatBody").innerHTML =
                 `<div style="padding:20px; text-align:center; color:var(--text-muted)">Loading...</div>`;
               await this.load();
 
-              // Start polling
+              // Start message polling
               if (!this.poller)
                 this.poller = setInterval(() => this.load(), 4000);
+
+              // Stop badge polling
+              if (this.badgePoller) {
+                clearInterval(this.badgePoller);
+                this.badgePoller = null;
+              }
             } else {
               if (this.poller) {
                 clearInterval(this.poller);
                 this.poller = null;
               }
+              // Restart badge polling
+              this.startBadgePolling();
+            }
+          },
+
+          // NEW: Check unread count
+          checkUnread: async function () {
+            if (this.isOpen) return;
+            if (!app.state.currentUser) return;
+
+            const uid =
+              app.state.currentUser.id || app.state.currentUser.user_id;
+            const res = await api.post("getUnreadCount", { userId: uid });
+
+            if (res.status === "success" && res.count > 0) {
+              const badge = document.getElementById("orgChatBadge");
+              badge.innerText = res.count > 9 ? "9+" : res.count;
+              badge.style.display = "flex";
+            } else {
+              document.getElementById("orgChatBadge").style.display = "none";
+            }
+          },
+
+          // NEW: Start badge polling
+          startBadgePolling: function () {
+            this.checkUnread();
+            if (!this.badgePoller) {
+              this.badgePoller = setInterval(() => this.checkUnread(), 6000); // Check every 6s
             }
           },
 
           load: async function () {
+            // ... (Keep existing load code) ...
             if (!this.isOpen) return;
             const uid =
               app.state.currentUser.id || app.state.currentUser.user_id;
-            const name = app.state.currentUser.name;
-
             const res = await api.post("getMessages", {
               userId: uid,
               otherId: this.adminId,
             });
-
             if (res.status === "success") {
               const html = res.data
                 .map((m) => {
@@ -4504,33 +4572,28 @@
                     hour: "2-digit",
                     minute: "2-digit",
                   });
-                  return `<div class="chat-msg ${isMine ? "sent" : "received"}">
-                          ${m.message_text}
-                          <small style="display:block; opacity:0.6; font-size:0.7rem; margin-top:2px; text-align:${isMine ? "right" : "left"}">${time}</small>
-                       </div>`;
+                  return `<div class="chat-msg ${isMine ? "sent" : "received"}">${m.message_text}<small style="display:block; opacity:0.6; font-size:0.7rem; margin-top:2px; text-align:${isMine ? "right" : "left"}">${time}</small></div>`;
                 })
                 .join("");
-
               const body = document.getElementById("orgChatBody");
-              const scroll = body.scrollHeight;
               body.innerHTML =
                 html ||
-                `<div style="text-align:center; padding:30px; color:var(--text-muted)">No messages yet.<br><small>Start the conversation!</small></div>`;
-              if (body.scrollHeight > scroll)
+                `<div style="text-align:center; padding:30px; color:var(--text-muted)">No messages yet.</div>`;
+              if (body.scrollHeight > body.clientHeight)
                 body.scrollTop = body.scrollHeight;
             }
           },
 
           send: async function () {
+            // ... (Keep existing send code) ...
             const input = document.getElementById("orgChatInput");
             const msg = input.value.trim();
             if (!msg) return;
-
             input.value = "";
+            input.style.height = "auto";
             const uid =
               app.state.currentUser.id || app.state.currentUser.user_id;
             const name = app.state.currentUser.name;
-
             await api.post("sendMessage", {
               senderId: uid,
               senderName: name,
