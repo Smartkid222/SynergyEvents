@@ -191,6 +191,86 @@
         gap: 16px;
         align-items: center;
       }
+      /* --- CHAT WIDGET --- */
+      .chat-widget {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        z-index: 100;
+      }
+      .chat-toggle-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--gradient);
+        color: white;
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .chat-window {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        width: 320px;
+        height: 450px;
+        background: var(--bg-dark);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      }
+      .chat-window.open {
+        display: flex;
+      }
+      .chat-header {
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .chat-msg {
+        max-width: 85%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+      }
+      .chat-msg.sent {
+        align-self: flex-end;
+        background: var(--primary);
+        border-bottom-right-radius: 2px;
+      }
+      .chat-msg.received {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.08);
+        border-bottom-left-radius: 2px;
+      }
+      .chat-footer {
+        padding: 10px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+      }
+      .chat-input {
+        flex: 1;
+        padding: 8px;
+        margin: 0;
+        font-size: 0.9rem;
+      }
 
       .view {
         display: none;
@@ -1938,6 +2018,58 @@
       </div>
     </div>
 
+    <!-- ORGANIZER CHAT WIDGET -->
+    <div class="chat-widget">
+      <div class="chat-window" id="organizerChatWindow">
+        <div class="chat-header">
+          <i
+            class="ph ph-headset"
+            style="font-size: 1.5rem; color: var(--primary)"
+          ></i>
+          <h3 style="font-size: 0.95rem">Support Chat</h3>
+          <button
+            onclick="app.chat.toggle()"
+            style="background: none; color: var(--text-muted); padding: 0"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <div class="chat-body" id="orgChatBody">
+          <div
+            style="
+              text-align: center;
+              margin-top: 40px;
+              color: var(--text-muted);
+            "
+          >
+            <i
+              class="ph ph-chats-circle"
+              style="font-size: 3rem; opacity: 0.3"
+            ></i>
+            <p style="font-size: 0.8rem; margin-top: 10px">How can we help?</p>
+          </div>
+        </div>
+        <div class="chat-footer" id="orgChatFooter" style="display: none">
+          <input
+            type="text"
+            class="chat-input"
+            id="orgChatInput"
+            placeholder="Type message..."
+          />
+          <button
+            class="btn btn-primary"
+            style="padding: 8px 10px"
+            onclick="app.chat.send()"
+          >
+            <i class="ph ph-paper-plane-tilt"></i>
+          </button>
+        </div>
+      </div>
+      <button class="chat-toggle-btn" onclick="app.chat.toggle()">
+        <i class="ph ph-chat-dots"></i>
+      </button>
+    </div>
+
     <script>
       // ==========================================
       // CONFIGURATION
@@ -2068,9 +2200,34 @@
           appliedCoupon: null, // Stores the valid coupon object
         },
         init: async () => {
+          // 1. Load session from storage
           app.ui.checkSession();
           app.ui.loadProfilePic();
           app.ui.applyCustomTheme();
+
+          // 2. Validate User Status with Server (The Fix)
+          const user = app.state.currentUser;
+          if (user && user.id) {
+            const statusRes = await api.post("checkUserStatus", {
+              userId: user.id,
+            });
+            if (statusRes && statusRes.status === "success") {
+              if (statusRes.banned) {
+                // User is banned! Update state immediately
+                app.state.currentUser.banned = true;
+                localStorage.setItem(
+                  "eh_session",
+                  JSON.stringify(app.state.currentUser),
+                );
+              }
+            } else {
+              // If check fails (user deleted?), force logout
+              // localStorage.removeItem("eh_session");
+              // app.state.currentUser = null;
+              // app.ui.checkSession();
+            }
+          }
+
           const preloader = document.getElementById("preloader");
           setTimeout(() => {
             preloader.style.opacity = "0";
@@ -2273,20 +2430,17 @@
                               )
                           : "External";
                       const isFav = app.state.favorites.includes(e.id);
+                      // Inside the map function...
                       return `
   <div class="event-card ${internalTickets.length === 0 && externalTicket ? "external-only" : ""}"
        id="event-card-${e.id}"
        data-category="${e.category}"
        data-title="${e.title.toLowerCase()}"
-       onclick="app.router.navigate('event', '${e.id}')">
+       onclick="${e.organizerBanned ? "" : `app.router.navigate('event', '${e.id}')`}" 
+       style="${e.organizerBanned ? "opacity: 0.7; pointer-events: none;" : ""}">
     <div class="event-img">
-      <img
-        src="${e.image || `https://picsum.photos/seed/${encodeURIComponent(e.title || "event")}/600/400`}"
-        alt="${e.title}"
-        loading="lazy"
-      />
-      <button class="fav-btn ${isFav ? "active" : ""}"
-              onclick="event.stopPropagation(); app.handlers.toggleFavorite('${e.id}')">
+      <img src="${e.image}" alt="${e.title}" loading="lazy" />
+      <button class="fav-btn ${isFav ? "active" : ""}" onclick="event.stopPropagation(); app.handlers.toggleFavorite('${e.id}')">
         <i class="ph ${isFav ? "ph-heart-fill" : "ph-heart"}"></i>
       </button>
     </div>
@@ -2304,14 +2458,13 @@
       <div class="event-card-footer">
         <span class="event-price">${priceDisplay}</span>
         ${
-          isSoldOut
-            ? `<button class="btn btn-secondary btn-sm" disabled>Sold Out</button>`
-            : externalTicket && internalTickets.length === 0
-              ? `<a href="${externalTicket.externalLink}" target="_blank" rel="noopener"
-                   class="btn btn-primary btn-sm" onclick="event.stopPropagation()">
-                   Get External Ticket →
-                 </a>`
-              : `<button class="btn btn-primary btn-sm">Get Ticket</button>`
+          e.organizerBanned
+            ? `<button class="btn btn-secondary btn-sm" disabled>Unavailable</button>`
+            : isSoldOut
+              ? `<button class="btn btn-secondary btn-sm" disabled>Sold Out</button>`
+              : externalTicket && internalTickets.length === 0
+                ? `<a href="${externalTicket.externalLink}" ... >Get External Ticket →</a>`
+                : `<button class="btn btn-primary btn-sm">Get Ticket</button>`
         }
       </div>
     </div>
@@ -2389,8 +2542,18 @@
             let ticketListHTML = "";
             let sectionHeader = "Get Tickets";
 
-            // IF EVENT IS PASSED
-            if (isPastEvent) {
+            // ACTIVE EVENT LOGIC
+            // Check if Organizer is Banned
+            if (event.organizerBanned) {
+              sectionHeader = "Event Unavailable";
+              ticketListHTML = `
+                 <div class="ticket-item" style="border-left: 4px solid var(--danger); padding: 24px; text-align: center;">
+                    <h3 style="color: var(--danger); margin-bottom: 8px;">Event Unavailable</h3>
+                    <p style="color: var(--text-muted);">This organizer is currently undergoing an investigation. Ticket sales have been temporarily suspended.</p>
+                 </div>`;
+            }
+            // Check if Event is Passed
+            else if (isPastEvent) {
               sectionHeader = "Event Ended";
               ticketListHTML = `
                  <div class="ticket-item" style="border-left: 4px solid var(--danger); padding: 24px; text-align: center;">
@@ -2618,6 +2781,29 @@
               app.router.navigate("home");
               return;
             }
+            // --- NEW: BAN CHECK ---
+            if (
+              user.banned === true ||
+              user.banned === "true" ||
+              user.banned === "TRUE"
+            ) {
+              container.innerHTML = `
+                <div class="view active">
+                  <div class="card" style="text-align:center; padding: 50px 20px; margin-top: 50px; border: 1px solid var(--danger); max-width: 500px; margin-left: auto; margin-right: auto;">
+                    <i class="ph ph-prohibit" style="font-size: 4rem; color: var(--danger); margin-bottom: 20px;"></i>
+                    <h2 style="color: var(--danger); margin-bottom: 10px;">Account Suspended</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 30px; line-height: 1.6;">
+                      Your account has been suspended due to a violation of our policies. 
+                      If you believe this is a mistake, please contact our support team.
+                    </p>
+                    <button class="btn btn-primary" onclick="app.ui.openModal('contactModal')">
+                      <i class="ph ph-envelope"></i> Contact Support
+                    </button>
+                  </div>
+                </div>
+              `;
+              return;
+            }
             container.innerHTML = `<div class="view active"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h1>Organizer Dashboard</h1><button class="btn btn-primary" onclick="app.handlers.openEventModal()"><i class="ph ph-plus"></i> Create Event</button></div><div class="page-loader"><div class="loader-ring"></div></div></div>`;
             const [eventsRes, wRes, pRes] = await Promise.all([
               api.post("getEvents"),
@@ -2638,13 +2824,21 @@
             const mySales = allPurchases.filter((p) =>
               myEventIds.includes(p.event_id),
             );
+            // ... inside renderOrganizerDashboard ...
+
+            // FIX: Calculate based on actual amount paid by buyer (after discount)
             const grossRevenue = mySales.reduce((sum, p) => {
-              const total = Number(p.total_paid || 0);
-              const organizerShare = p.subtotal
-                ? Number(p.subtotal)
-                : total / 1.05;
-              return sum + organizerShare;
+              const totalPaid = Number(p.total_paid || 0);
+              const serviceFee = Number(p.service_fee || 0);
+
+              // Organizer Share = Total Paid - Platform Fee
+              // (We no longer use 'subtotal' here because that is the full price before discount)
+              const organizerShare = totalPaid - serviceFee;
+
+              return sum + (organizerShare > 0 ? organizerShare : 0);
             }, 0);
+
+            // ... existing code ...
             const totalPaidOut = withdrawals
               .filter((w) => w.status === "Approved" || w.status === "Pending")
               .reduce((sum, w) => sum + Number(w.amount || 0), 0);
@@ -2946,10 +3140,33 @@
             const found = coupons.find((c) => c.code === code);
 
             if (found) {
+              // --- NEW VALIDATION ---
+
+              // 1. Check Expiry
+              if (found.expiry) {
+                const expDate = new Date(found.expiry);
+                expDate.setHours(23, 59, 59, 999); // Check end of day
+                if (new Date() > expDate) {
+                  statusEl.innerHTML = `<span style="color:var(--danger)"><i class="ph ph-x-circle"></i> This coupon has expired.</span>`;
+                  app.state.appliedCoupon = null;
+                  app.handlers.updateSummary();
+                  return;
+                }
+              }
+
+              // 2. Check Usage Limit
+              if (found.limit > 0 && (found.used || 0) >= found.limit) {
+                statusEl.innerHTML = `<span style="color:var(--danger)"><i class="ph ph-x-circle"></i> This coupon has reached its usage limit.</span>`;
+                app.state.appliedCoupon = null;
+                app.handlers.updateSummary();
+                return;
+              }
+
+              // --- END VALIDATION ---
+
               app.state.appliedCoupon = found;
               statusEl.innerHTML = `<span style="color:var(--success)"><i class="ph ph-check-circle"></i> Code applied successfully!</span>`;
               app.ui.showToast("Coupon Applied!");
-              // Re-calculate summary
               app.handlers.updateSummary();
             } else {
               app.state.appliedCoupon = null;
@@ -3242,6 +3459,17 @@
             const btn = document.getElementById("payBtn");
             app.ui.setLoading(btn, true);
 
+            // CALCULATION FIX: Determine discount amount
+            let discount = 0;
+            if (app.state.appliedCoupon) {
+              const cp = app.state.appliedCoupon;
+              if (cp.type === "percent") {
+                discount = subtotal * (cp.value / 100);
+              } else {
+                discount = cp.value;
+              }
+            }
+
             const res = await api.post("verifyPayment", {
               reference: reference,
               event_id: app.state.currentEventId,
@@ -3251,9 +3479,11 @@
               total_paid: total,
               service_fee: fee,
               subtotal: subtotal,
+              discount: discount, // ADDED THIS LINE
             });
 
             app.ui.setLoading(btn, false, "Pay Now");
+            // ... rest of function remains unchanged
 
             if (res && res.status === "success") {
               app.ui.closeModal("checkoutModal");
@@ -3449,24 +3679,52 @@
             const div = document.createElement("div");
             div.className = "coupon-row";
             div.style =
-              "background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;";
+              "background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;";
+
+            // FIX: Safe date extraction
+            let expiryVal = "";
+            if (data && data.expiry) {
+              // If backend sends YYYY-MM-DD, use it directly.
+              // If it sends a full timestamp, convert it.
+              if (data.expiry.length === 10) {
+                expiryVal = data.expiry;
+              } else {
+                expiryVal = new Date(data.expiry).toISOString().split("T")[0];
+              }
+            }
 
             div.innerHTML = `
               <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger); cursor:pointer; order: 5;"><i class="ph ph-x"></i></button>
+              
               <div style="flex: 1; min-width: 120px;">
                 <label style="font-size: 0.8rem;">Code</label>
-                <input type="text" class="c-code" value="${data ? data.code : ""}" placeholder="e.g. SAVE20" style="padding: 8px;" />
+                <input type="text" class="c-code" value="${data ? data.code : ""}" placeholder="SAVE20" style="padding: 8px; width: 100%;" />
               </div>
-              <div style="width: 100px;">
+              
+              <div style="width: 80px;">
                 <label style="font-size: 0.8rem;">Discount</label>
-                <input type="number" class="c-value" value="${data ? data.value : ""}" placeholder="10" style="padding: 8px;" />
+                <input type="number" class="c-value" value="${data ? data.value : ""}" placeholder="10" style="padding: 8px; width: 100%;" />
               </div>
-              <div style="width: 100px;">
+              
+              <div style="width: 80px;">
                 <label style="font-size: 0.8rem;">Type</label>
-                <select class="c-type" style="padding: 8px;">
+                <select class="c-type" style="padding: 8px; width: 100%;">
                   <option value="percent" ${data && data.type === "percent" ? "selected" : ""}>%</option>
-                  <option value="fixed" ${data && data.type === "fixed" ? "selected" : ""}>Fixed (₦)</option>
+                  <option value="fixed" ${data && data.type === "fixed" ? "selected" : ""}>Fixed</option>
                 </select>
+              </div>
+
+              <!-- NEW: Expiry Date Input -->
+              <div style="flex: 1; min-width: 140px;">
+                <label style="font-size: 0.8rem;">Expiry Date</label>
+                <input type="date" class="c-expiry" value="${expiryVal}" style="padding: 8px; width: 100%;" />
+              </div>
+
+              <!-- NEW: Usage Limit Input -->
+              <div style="width: 100px;">
+                <label style="font-size: 0.8rem;">Use Limit</label>
+                <input type="number" class="c-limit" value="${data ? data.limit : ""}" placeholder="0 = Unlimited" style="padding: 8px; width: 100%;" />
+                ${data && data.used ? `<small style="color:var(--text-muted); font-size: 0.7rem; display:block; margin-top:2px;">Used: ${data.used}</small>` : ""}
               </div>
             `;
             container.appendChild(div);
@@ -3571,6 +3829,8 @@
                   code: row.querySelector(".c-code").value.trim().toUpperCase(),
                   value: Number(row.querySelector(".c-value").value) || 0,
                   type: row.querySelector(".c-type").value,
+                  expiry: row.querySelector(".c-expiry").value || "", // NEW
+                  limit: Number(row.querySelector(".c-limit").value) || 0, // NEW
                 };
               })
               .filter((c) => c.code && c.value > 0);
@@ -4188,6 +4448,96 @@
               t.classList.remove("show");
               setTimeout(() => t.remove(), 400);
             }, 3000);
+          },
+        },
+        chat: {
+          adminId: "ADMIN_PLATFORM",
+          isOpen: false,
+          poller: null,
+
+          toggle: async function () {
+            this.isOpen = !this.isOpen;
+            const win = document.getElementById("organizerChatWindow");
+            win.classList.toggle("open", this.isOpen);
+
+            if (this.isOpen) {
+              if (!app.state.currentUser) {
+                app.ui.showToast("Login to chat", "info");
+                this.isOpen = false;
+                win.classList.remove("open");
+                app.ui.openAuthModal("login");
+                return;
+              }
+              // Initialize
+              document.getElementById("orgChatFooter").style.display = "flex";
+              document.getElementById("orgChatBody").innerHTML =
+                `<div style="padding:20px; text-align:center; color:var(--text-muted)">Loading...</div>`;
+              await this.load();
+
+              // Start polling
+              if (!this.poller)
+                this.poller = setInterval(() => this.load(), 4000);
+            } else {
+              if (this.poller) {
+                clearInterval(this.poller);
+                this.poller = null;
+              }
+            }
+          },
+
+          load: async function () {
+            if (!this.isOpen) return;
+            const uid =
+              app.state.currentUser.id || app.state.currentUser.user_id;
+            const name = app.state.currentUser.name;
+
+            const res = await api.post("getMessages", {
+              userId: uid,
+              otherId: this.adminId,
+            });
+
+            if (res.status === "success") {
+              const html = res.data
+                .map((m) => {
+                  const isMine = String(m.sender_id) === String(uid);
+                  const time = new Date(m.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return `<div class="chat-msg ${isMine ? "sent" : "received"}">
+                          ${m.message_text}
+                          <small style="display:block; opacity:0.6; font-size:0.7rem; margin-top:2px; text-align:${isMine ? "right" : "left"}">${time}</small>
+                       </div>`;
+                })
+                .join("");
+
+              const body = document.getElementById("orgChatBody");
+              const scroll = body.scrollHeight;
+              body.innerHTML =
+                html ||
+                `<div style="text-align:center; padding:30px; color:var(--text-muted)">No messages yet.<br><small>Start the conversation!</small></div>`;
+              if (body.scrollHeight > scroll)
+                body.scrollTop = body.scrollHeight;
+            }
+          },
+
+          send: async function () {
+            const input = document.getElementById("orgChatInput");
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            input.value = "";
+            const uid =
+              app.state.currentUser.id || app.state.currentUser.user_id;
+            const name = app.state.currentUser.name;
+
+            await api.post("sendMessage", {
+              senderId: uid,
+              senderName: name,
+              receiverId: this.adminId,
+              message: msg,
+            });
+            await this.load();
           },
         },
       };
