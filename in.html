@@ -67,7 +67,6 @@
         outline: none;
         transition: all 0.2s ease;
         position: relative;
-        overflow: hidden;
       }
       .btn {
         padding: 12px 24px;
@@ -191,45 +190,118 @@
         gap: 16px;
         align-items: center;
       }
-      /* --- CHAT WIDGET --- */
+      /* ────────────────────────────────────────────────
+      Modern floating action button + notification badge
+      ────────────────────────────────────────────────── */
+
       .chat-widget {
         position: fixed;
-        bottom: 90px;
+        bottom: 100px; /* ← increased from 90px to give more breathing room above mobile nav */
         right: 20px;
-        z-index: 100;
+        z-index: 999; /* make sure it's above most elements */
       }
+
       .chat-toggle-btn {
-        width: 56px;
-        height: 56px;
+        /* Core size & shape */
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
+
+        /* Modern gradient + glass effect */
         background: var(--gradient);
-        color: white;
-        font-size: 1.6rem;
+        backdrop-filter: blur(8px); /* light glass feel */
+        -webkit-backdrop-filter: blur(8px);
+
+        /* Border & shadow – premium floating look */
+        border: 2px solid rgba(255, 255, 255, 0.14);
+        box-shadow:
+          0 8px 32px rgba(99, 102, 241, 0.35),
+          /* main glow */ 0 2px 12px rgba(236, 72, 153, 0.25),
+          /* accent shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.12); /* inner highlight */
+
+        /* Center icon perfectly */
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
+        color: white;
+        font-size: 1.9rem; /* slightly larger icon */
+
+        /* Smooth animations */
+        transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: translateZ(0); /* force hardware acceleration */
       }
-      /* RED BADGE STYLES */
+
+      /* ─── Interactive states ─── */
+      .chat-toggle-btn:hover,
+      .chat-toggle-btn:active {
+        transform: scale(1.09) translateY(-3px);
+        box-shadow:
+          0 14px 40px rgba(99, 102, 241, 0.48),
+          0 4px 20px rgba(236, 72, 153, 0.35);
+      }
+
+      .chat-toggle-btn:active {
+        transform: scale(0.96) translateY(1px);
+        transition: transform 0.12s ease;
+      }
+
+      /* ─── When chat is open ─── */
+      .chat-window.open + .chat-toggle-btn {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        transform: scale(1.06);
+        box-shadow: 0 12px 36px rgba(79, 70, 229, 0.5);
+      }
+
+      /* ─── Unread badge – more modern style ─── */
       .unread-badge {
         position: absolute;
-        top: -4px;
-        right: -4px;
-        min-width: 20px;
-        height: 20px;
-        padding: 0 4px; /* Padding for numbers like '10' */
-        background: #ef4444; /* Red color */
+        top: -6px;
+        right: -6px;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 5px;
+
+        background: #f43f5e; /* more vibrant red */
         color: white;
-        border-radius: 10px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        display: none;
+        font-size: 0.74rem;
+        font-weight: 800;
+        line-height: 22px;
+        text-align: center;
+
+        border-radius: 11px;
+        border: 2.5px solid var(--bg-dark);
+        box-shadow: 0 2px 8px rgba(244, 63, 94, 0.45);
+
+        display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid var(--bg-dark);
-        z-index: 10;
+
+        transform: scale(1);
+        transition: transform 0.2s ease;
+      }
+
+      /* Pulse when there are unread messages */
+      @keyframes badge-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.18);
+        }
+      }
+
+      .has-unread .unread-badge {
+        animation: badge-pulse 1.8s infinite ease-in-out;
+      }
+
+      /* Optional: tiny dot when 0 but recent activity (can be toggled via JS) */
+      .unread-badge.zero-but-active {
+        background: var(--success);
+        min-width: 14px;
+        height: 14px;
+        font-size: 0;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
       }
       .chat-window {
         position: absolute;
@@ -2239,19 +2311,12 @@
               userId: user.id,
             });
             if (statusRes && statusRes.status === "success") {
-              if (statusRes.banned) {
-                // User is banned! Update state immediately
-                app.state.currentUser.banned = true;
-                localStorage.setItem(
-                  "eh_session",
-                  JSON.stringify(app.state.currentUser),
-                );
-              }
-            } else {
-              // If check fails (user deleted?), force logout
-              // localStorage.removeItem("eh_session");
-              // app.state.currentUser = null;
-              // app.ui.checkSession();
+              // IMPORTANT: Update the state to match the server (true OR false)
+              app.state.currentUser.banned = statusRes.banned;
+              localStorage.setItem(
+                "eh_session",
+                JSON.stringify(app.state.currentUser),
+              );
             }
           }
 
@@ -4538,12 +4603,17 @@
               app.state.currentUser.id || app.state.currentUser.user_id;
             const res = await api.post("getUnreadCount", { userId: uid });
 
-            if (res.status === "success" && res.count > 0) {
-              const badge = document.getElementById("orgChatBadge");
-              badge.innerText = res.count > 9 ? "9+" : res.count;
+            // When you get unread count from server
+            const badge = document.getElementById("orgChatBadge");
+            const count = res.count || 0;
+
+            if (count > 0) {
+              badge.textContent = count > 9 ? "9+" : count;
               badge.style.display = "flex";
+              badge.closest(".chat-widget").classList.add("has-unread");
             } else {
-              document.getElementById("orgChatBadge").style.display = "none";
+              badge.style.display = "none";
+              badge.closest(".chat-widget").classList.remove("has-unread");
             }
           },
 
