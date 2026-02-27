@@ -1375,6 +1375,96 @@
         background: var(--primary);
         border-color: var(--primary);
       }
+      /* ───────────────────────────────────────────────
+         THEME ENGINE STYLES
+      ────────────────────────────────────────────────── */
+
+      /* The Background Container */
+      #custom-bg-layer {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+      }
+      #custom-bg-layer.active {
+        opacity: 0.15; /* Subtle overlay so text is readable */
+      }
+
+      /* Color Theme Variables */
+      .theme-default {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --accent: #ec4899;
+        --bg-dark: #0f172a;
+        --bg-card: rgba(30, 41, 59, 0.7);
+      }
+
+      .theme-black {
+        --primary: #ffffff;
+        --primary-dark: #e2e8f0;
+        --accent: #f43f5e;
+        --bg-dark: #000000;
+        --bg-card: rgba(10, 10, 10, 0.85);
+        --text-main: #ffffff;
+        --text-muted: #a0a0a0;
+      }
+
+      .theme-ocean {
+        --primary: #06b6d4;
+        --primary-dark: #0891b2;
+        --accent: #f43f5e;
+        --bg-dark: #0c4a6e;
+        --bg-card: rgba(12, 74, 110, 0.7);
+      }
+
+      .theme-nature {
+        --primary: #22c55e;
+        --primary-dark: #16a34a;
+        --accent: #f97316;
+        --bg-dark: #14532d;
+        --bg-card: rgba(20, 83, 45, 0.7);
+      }
+
+      /* Theme Selection UI */
+      .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .theme-swatch {
+        height: 60px;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: white;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .theme-swatch:hover {
+        transform: scale(1.03);
+      }
+      .theme-swatch.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent);
+      }
+      .theme-swatch.active::after {
+        content: "✓";
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        font-size: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -2168,6 +2258,123 @@
         <span class="unread-badge" id="orgChatBadge">0</span>
       </button>
     </div>
+    <!-- THEME MODAL -->
+    <div class="modal-overlay" id="themeModal">
+      <div class="card modal">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Appearance</h2>
+          <button
+            class="btn btn-secondary"
+            onclick="app.ui.closeModal('themeModal')"
+          >
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+
+        <!-- Color Themes -->
+        <label style="margin-bottom: 8px; display: block; font-weight: 600"
+          >Color Theme</label
+        >
+        <div class="theme-grid">
+          <div
+            class="theme-swatch theme-default"
+            onclick="app.theme.setColor('default')"
+            data-theme="default"
+          >
+            Default
+          </div>
+          <div
+            class="theme-swatch theme-black"
+            onclick="app.theme.setColor('black')"
+            data-theme="black"
+            style="background: #000; border: 1px solid #333"
+          >
+            Midnight Black
+          </div>
+          <div
+            class="theme-swatch theme-ocean"
+            onclick="app.theme.setColor('ocean')"
+            data-theme="ocean"
+            style="background: linear-gradient(135deg, #0c4a6e, #0891b2)"
+          >
+            Ocean Blue
+          </div>
+          <div
+            class="theme-swatch theme-nature"
+            onclick="app.theme.setColor('nature')"
+            data-theme="nature"
+            style="background: linear-gradient(135deg, #14532d, #22c55e)"
+          >
+            Nature Green
+          </div>
+        </div>
+
+        <!-- Background Image -->
+        <label style="margin-bottom: 8px; display: block; font-weight: 600"
+          >Custom Background</label
+        >
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+          "
+        >
+          <div id="bgPreviewArea" style="margin-bottom: 12px; display: none">
+            <img
+              id="bgPreviewImg"
+              src=""
+              style="
+                width: 100%;
+                height: 100px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 8px;
+              "
+            />
+            <button class="btn btn-danger btn-sm" onclick="app.theme.clearBg()">
+              <i class="ph ph-trash"></i> Remove Background
+            </button>
+          </div>
+
+          <input
+            type="file"
+            id="bgInput"
+            accept="image/*"
+            style="display: none"
+            onchange="app.theme.uploadBg(this)"
+          />
+          <button
+            class="btn btn-secondary"
+            onclick="document.getElementById('bgInput').click()"
+          >
+            <i class="ph ph-image"></i> Upload Image
+          </button>
+          <small
+            style="
+              display: block;
+              margin-top: 8px;
+              color: var(--text-muted);
+              font-size: 0.75rem;
+            "
+          >
+            Recommended: High quality landscape images. <br />Saved locally on
+            your device.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background Layer (Empty div for the image) -->
+    <div id="custom-bg-layer"></div>
 
     <script>
       // ==========================================
@@ -2302,6 +2509,7 @@
           // 1. Load session from storage
           app.ui.checkSession();
           app.ui.loadProfilePic();
+          app.theme.init();
           app.ui.applyCustomTheme();
 
           // 2. Validate User Status with Server (The Fix)
@@ -4367,7 +4575,7 @@
                     ${user.role === "organizer" ? '<div class="profile-menu-item"><i class="ph ph-bell"></i> Notifications <div style="margin-left:auto"><label class="switch"><input type="checkbox" checked onchange="app.ui.showToast(\'Notifications Enabled\')"><span class="slider round"></span></label></div></div>' : ""}
                     <div class="profile-menu-item" onclick="app.ui.showToast('Coming Soon')"><i class="ph ph-globe"></i> Language</div>
                     <div class="profile-menu-item" onclick="app.ui.openModal('aboutModal')"><i class="ph ph-info"></i> About Us</div>
-                    <div class="profile-menu-item" onclick="app.ui.openThemePicker()"><i class="ph ph-palette"></i> Theme</div>
+                                        <div class="profile-menu-item" onclick="app.ui.openModal('themeModal')"><i class="ph ph-palette"></i> Appearance</div>
                     <div class="profile-menu-item" onclick="app.ui.openModal('helpModal')"><i class="ph ph-question"></i> Help Center</div>
                     <div class="profile-menu-item" onclick="app.ui.showContactUs()"><i class="ph ph-envelope"></i> Contact Us</div>
                     <div class="profile-menu-item danger" onclick="app.auth.logout()"><i class="ph ph-sign-out"></i> Logout</div>
@@ -4671,6 +4879,135 @@
               message: msg,
             });
             await this.load();
+          },
+        },
+        theme: {
+          state: {
+            color: "default", // default, black, ocean, nature
+            bg: null, // base64 string
+          },
+
+          init: function () {
+            // Load from localStorage
+            const saved = localStorage.getItem("eh_user_theme");
+            if (saved) {
+              try {
+                const parsed = JSON.parse(saved);
+                this.state.color = parsed.color || "default";
+                this.state.bg = parsed.bg || null;
+              } catch (e) {
+                console.error("Theme load error", e);
+              }
+            }
+            this.apply();
+          },
+
+          save: function () {
+            localStorage.setItem("eh_user_theme", JSON.stringify(this.state));
+          },
+
+          apply: function () {
+            const root = document.documentElement;
+            const body = document.body;
+            const bgLayer = document.getElementById("custom-bg-layer");
+
+            // 1. Apply Color Class
+            // Remove all theme classes first
+            root.classList.remove(
+              "theme-default",
+              "theme-black",
+              "theme-ocean",
+              "theme-nature",
+            );
+
+            // Add active theme class
+            root.classList.add(`theme-${this.state.color}`);
+
+            // 2. Apply Background Image
+            if (this.state.bg) {
+              bgLayer.style.backgroundImage = `url(${this.state.bg})`;
+              bgLayer.classList.add("active");
+
+              // Show preview in modal if open
+              const preview = document.getElementById("bgPreviewImg");
+              const previewArea = document.getElementById("bgPreviewArea");
+              if (preview) {
+                preview.src = this.state.bg;
+                previewArea.style.display = "block";
+              }
+            } else {
+              bgLayer.style.backgroundImage = "";
+              bgLayer.classList.remove("active");
+              const previewArea = document.getElementById("bgPreviewArea");
+              if (previewArea) previewArea.style.display = "none";
+            }
+
+            // Update Active Swatch UI
+            document.querySelectorAll(".theme-swatch").forEach((el) => {
+              el.classList.remove("active");
+              if (el.dataset.theme === this.state.color)
+                el.classList.add("active");
+            });
+          },
+
+          setColor: function (colorName) {
+            this.state.color = colorName;
+            this.save();
+            this.apply();
+            app.ui.showToast("Theme updated!");
+          },
+
+          uploadBg: async function (input) {
+            if (!input.files || !input.files[0]) return;
+
+            app.ui.showToast("Processing image...", "info");
+
+            try {
+              // Use the existing compressor or a specific one
+              const file = input.files[0];
+
+              // Simple compression logic
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                  const canvas = document.createElement("canvas");
+                  let w = img.width;
+                  let h = img.height;
+
+                  // Resize to max 1920px width for performance
+                  if (w > 1920) {
+                    h = (h * 1920) / w;
+                    w = 1920;
+                  }
+
+                  canvas.width = w;
+                  canvas.height = h;
+                  const ctx = canvas.getContext("2d");
+                  ctx.drawImage(img, 0, 0, w, h);
+
+                  // Convert to JPEG 0.6 quality to save space
+                  const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+
+                  this.state.bg = dataUrl;
+                  this.save();
+                  this.apply();
+                  app.ui.showToast("Background set!");
+                };
+              };
+            } catch (e) {
+              console.error(e);
+              app.ui.showToast("Error uploading image", "error");
+            }
+          },
+
+          clearBg: function () {
+            this.state.bg = null;
+            this.save();
+            this.apply();
+            app.ui.showToast("Background removed");
           },
         },
       };
