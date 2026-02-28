@@ -22,6 +22,7 @@
         --accent: #ec4899;
         --bg-dark: #0f172a;
         --bg-card: rgba(30, 41, 59, 0.7);
+        --bg-header: rgba(15, 23, 42, 0.9);
         --text-main: #f8fafc;
         --text-muted: #94a3b8;
         --border: rgba(255, 255, 255, 0.1);
@@ -175,7 +176,7 @@
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(15, 23, 42, 0.9);
+        background: var(--bg-header);
         backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--border);
         padding: 16px 0;
@@ -1199,7 +1200,7 @@
         left: 0;
         width: 100%;
         height: 70px;
-        background: rgba(15, 23, 42, 0.95);
+        background: var(--bg-header);
         backdrop-filter: blur(20px);
         border-top: 1px solid var(--border);
         z-index: 99;
@@ -1401,14 +1402,16 @@
         --accent: #ec4899;
         --bg-dark: #0f172a;
         --bg-card: rgba(30, 41, 59, 0.7);
+        --bg-header: rgba(15, 23, 42, 0.8);
       }
 
       .theme-black {
-        --primary: #ffffff;
+        --primary: #6366f1;
         --primary-dark: #e2e8f0;
         --accent: #f43f5e;
         --bg-dark: #000000;
         --bg-card: rgba(10, 10, 10, 0.85);
+        --bg-header: rgba(0, 0, 0, 0.9);
         --text-main: #ffffff;
         --text-muted: #a0a0a0;
       }
@@ -1419,6 +1422,7 @@
         --accent: #f43f5e;
         --bg-dark: #0c4a6e;
         --bg-card: rgba(12, 74, 110, 0.7);
+        --bg-header: rgba(12, 74, 110, 0.8);
       }
 
       .theme-nature {
@@ -1427,6 +1431,7 @@
         --accent: #f97316;
         --bg-dark: #14532d;
         --bg-card: rgba(20, 83, 45, 0.7);
+        --bg-header: rgba(20, 83, 45, 0.8);
       }
 
       /* Theme Selection UI */
@@ -1546,9 +1551,91 @@
                   <i class="ph ph-user-circle"></i>
                 </button>
                 <div id="userMenuDropdown" class="user-menu-dropdown">
-                  <div class="user-menu-item" onclick="app.ui.showContactUs()">
+                  <!-- Profile Management -->
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.triggerProfilePicUpload();
+                      app.ui.toggleUserMenu();
+                    "
+                  >
+                    <i class="ph ph-user-circle"></i> Change Profile Pic
+                  </div>
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.openModal('changePasswordModal');
+                      app.ui.toggleUserMenu();
+                    "
+                  >
+                    <i class="ph ph-shield-check"></i> Password & Security
+                  </div>
+
+                  <div
+                    style="
+                      height: 1px;
+                      background: var(--border);
+                      margin: 4px 8px;
+                    "
+                  ></div>
+
+                  <!-- App Settings -->
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.openModal('themeModal');
+                      app.ui.toggleUserMenu();
+                    "
+                  >
+                    <i class="ph ph-palette"></i> Appearance
+                  </div>
+
+                  <div
+                    style="
+                      height: 1px;
+                      background: var(--border);
+                      margin: 4px 8px;
+                    "
+                  ></div>
+
+                  <!-- Info -->
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.openModal('aboutModal');
+                      app.ui.toggleUserMenu();
+                    "
+                  >
+                    <i class="ph ph-info"></i> About Us
+                  </div>
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.openModal('helpModal');
+                      app.ui.toggleUserMenu();
+                    "
+                  >
+                    <i class="ph ph-question"></i> Help Center
+                  </div>
+                  <div
+                    class="user-menu-item"
+                    onclick="
+                      app.ui.showContactUs();
+                      app.ui.toggleUserMenu();
+                    "
+                  >
                     <i class="ph ph-envelope"></i> Contact Us
                   </div>
+
+                  <div
+                    style="
+                      height: 1px;
+                      background: var(--border);
+                      margin: 4px 8px;
+                    "
+                  ></div>
+
+                  <!-- Logout -->
                   <div
                     class="user-menu-item danger"
                     onclick="app.auth.logout()"
@@ -3010,7 +3097,9 @@
               <h4>${event.organizerName || "Unknown Organizer"}</h4>
               <span>Organizer</span>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="app.ui.showToast('Followed!')"><i class="ph ph-user-plus"></i> Follow</button>
+              <button class="btn btn-secondary btn-sm" id="followBtn" onclick="app.handlers.toggleFollow('${event.organizerId}')">
+               <i class="ph ph-user-plus"></i> Follow
+              </button>
           </div>
           <div class="ticket-list-container">
             <h3 style="padding: 16px 16px 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">${sectionHeader}</h3>
@@ -4429,6 +4518,31 @@
               app.ui.showToast("Password updated successfully!");
               app.ui.closeModal("changePasswordModal");
               form.reset();
+            }
+          },
+          toggleFollow: async (organizerId) => {
+            if (!app.state.currentUser) {
+              app.ui.openAuthModal("login");
+              return;
+            }
+
+            const btn = document.getElementById("followBtn");
+            const res = await api.post("toggleFollow", {
+              followerId: app.state.currentUser.id,
+              organizerId: organizerId,
+            });
+
+            if (res.status === "success") {
+              if (res.isFollowing) {
+                btn.innerHTML = `<i class="ph ph-check-circle"></i> Following`;
+                btn.classList.remove("btn-secondary");
+                btn.classList.add("btn-success");
+              } else {
+                btn.innerHTML = `<i class="ph ph-user-plus"></i> Follow`;
+                btn.classList.remove("btn-success");
+                btn.classList.add("btn-secondary");
+              }
+              app.ui.showToast(res.isFollowing ? "Followed!" : "Unfollowed");
             }
           },
         },
